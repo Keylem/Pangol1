@@ -10,187 +10,404 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{amssymb}
+\usepackage{float}
+\usepackage{fancyhdr}
+\usepackage{mdframed}
+\usepackage{tcolorbox}
+\usepackage{booktabs}
+\usepackage{microtype}
+% Disable font expansion to avoid pdfTeX error with non-scalable fonts
+\microtypesetup{expansion=false}
+\usepackage{parskip}
 
-\geometry{margin=2.5cm}
+\tcbuselibrary{skins, breakable}
 
-% Couleurs Pangol1
-\definecolor{primary}{RGB}{46, 125, 50}
-\definecolor{secondary}{RGB}{80, 80, 80}
-
-\titleformat{\section}{\color{primary}\normalfont\Large\bfseries}{\thesection}{1em}{}
-\titleformat{\subsection}{\color{primary}\normalfont\large\bfseries}{\thesubsection}{1em}{}
-\titleformat{\subsubsection}{\color{primary}\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
-
-\title{
-    \color{primary}\Huge\textbf{Manuel d'Utilisation}\\[0.5cm]
-    \Large Logiciel de Traitement de Données \textbf{Pangol1}\\[0.2cm]
-    \small Guide Complet : Importation, Analyse et Visualisation
+\geometry{
+  top=2.5cm,
+  bottom=2.5cm,
+  left=3cm,
+  right=3cm,
+  headheight=14pt
 }
-\author{Documentation Technique Pangol1}
-\date{\today}
 
+% ── Palette de couleurs ──────────────────────────────────────────────────────
+\definecolor{primary}{RGB}{20, 20, 20}
+\definecolor{secondary}{RGB}{80, 80, 80}
+\definecolor{accent}{RGB}{0, 102, 204}
+\definecolor{lightgray}{RGB}{245, 245, 245}
+\definecolor{rulegray}{RGB}{200, 200, 200}
+\definecolor{boxbg}{RGB}{240, 246, 255}
+\definecolor{boxborder}{RGB}{0, 102, 204}
+
+% ── Liens ────────────────────────────────────────────────────────────────────
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accent,
+  urlcolor=accent,
+  pdfauthor={Documentation Technique Pangol1},
+  pdftitle={Manuel d'Utilisation — Pangol1}
+}
+
+% ── En-tête / pied de page ───────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\color{secondary}\textbf{Pangol1} — Manuel d'utilisation}
+\fancyhead[R]{\small\color{secondary}\leftmark}
+\fancyfoot[C]{\small\color{secondary}\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+\renewcommand{\headrule}{\color{rulegray}\hrule width\headwidth height\headrulewidth}
+
+% ── Titres de sections ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\color{primary}\Large\bfseries}
+  {\color{accent}\thesection}{1em}{}
+  [\vspace{2pt}\color{rulegray}\titlerule\vspace{4pt}]
+
+\titleformat{\subsection}
+  {\color{primary}\large\bfseries}
+  {\color{accent}\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\color{secondary}\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{12pt}{4pt}
+\titlespacing*{\subsubsection}{0pt}{8pt}{3pt}
+
+% ── Listes ───────────────────────────────────────────────────────────────────
+\setlist[itemize,1]{
+  label={\color{accent}\textbullet},
+  leftmargin=1.4em,
+  itemsep=3pt,
+  parsep=0pt
+}
+\setlist[itemize,2]{
+  label={\color{secondary}\textendash},
+  leftmargin=1.6em,
+  itemsep=2pt,
+  parsep=0pt
+}
+\setlist[enumerate,1]{
+  leftmargin=1.6em,
+  itemsep=3pt,
+  parsep=0pt
+}
+
+% ── Boîte raccourcis ─────────────────────────────────────────────────────────
+\newenvironment{shortcutbox}{%
+  \begin{tcolorbox}[
+    colback=lightgray,
+    colframe=rulegray,
+    boxrule=0.5pt,
+    arc=4pt,
+    left=8pt, right=8pt, top=6pt, bottom=6pt
+  ]
+  \setlength{\columnsep}{1.5em}
+  \begin{multicols}{2}
+}{%
+  \end{multicols}
+  \end{tcolorbox}
+}
+
+% ── Boîte info générique ─────────────────────────────────────────────────────
+\newenvironment{infobox}[1][]{%
+  \begin{tcolorbox}[
+    colback=boxbg,
+    colframe=boxborder,
+    boxrule=0.8pt,
+    arc=4pt,
+    title={\small\bfseries #1},
+    fonttitle=\color{white},
+    coltitle=white,
+    attach boxed title to top left={yshift=-2mm, xshift=4mm},
+    boxed title style={colback=boxborder, arc=3pt},
+    left=8pt, right=8pt, top=10pt, bottom=6pt
+  ]
+}{%
+  \end{tcolorbox}
+}
+
+% ── Commande touche clavier ───────────────────────────────────────────────────
+\newcommand{\kbd}[1]{%
+  \texttt{\small\fcolorbox{rulegray}{lightgray}{\,#1\,}}%
+}
+
+% ── Page de titre ─────────────────────────────────────────────────────────────
+\title{
+  \vspace{-1cm}
+  {\color{accent}\rule{\linewidth}{2pt}}\\[0.6cm]
+  {\color{primary}\Huge\bfseries Manuel d'Utilisation}\\[0.3cm]
+  {\color{secondary}\Large Logiciel de Traitement de Données \textbf{Pangol1}}\\[0.15cm]
+  {\color{secondary}\small Guide Complet : Importation, Analyse et Visualisation}\\[0.5cm]
+  {\color{accent}\rule{\linewidth}{1pt}}
+}
+\author{{\color{secondary}Documentation Technique Pangol1}}
+\date{{\color{secondary}\today}}
+
+% ════════════════════════════════════════════════════════════════════════════
 \begin{document}
+% ════════════════════════════════════════════════════════════════════════════
 
 \maketitle
+\thispagestyle{empty}
 
-\begin{abstract}
+\vspace{0.5cm}
+\begin{tcolorbox}[
+  colback=boxbg,
+  colframe=boxborder,
+  boxrule=1pt,
+  arc=5pt,
+  left=12pt, right=12pt, top=10pt, bottom=10pt
+]
 \textbf{Pangol1} est une solution logicielle open source de haute performance spécialisée dans l'importation, le traitement et la visualisation de données structurées massives.
-\end{abstract}
+\end{tcolorbox}
 
+\vspace{0.4cm}
 \tableofcontents
 \newpage
 
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 \section{Présentation de l'Interface}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
-L'interface de Pangol1 est conçue pour l'analyse de gros volumes de données. Elle génère ensuite ses données sous forme de graphique définit via des filtres choisis par l'utilisateur
+L'interface de Pangol1 est conçue pour l'analyse de gros volumes de données. Elle génère ensuite ses données sous forme de graphique définit via des filtres choisis par l'utilisateur.
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/interface.png}
+  \caption{Interface principale de Pangol1}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Barre de Menu Supérieure}
 
 \begin{itemize}
-    \item \textbf{Fichier :} Ouvrir un fichier local, charger depuis une URL, fermer une table.
-    \item \textbf{Affichage :} Modifier la disposition des fenêtres et de la mise en forme de l'application pour le confort de l'utilisateur
-    \item \textbf{Aide :} Changer la langue et ouvrir la documentation.
+  \item \textbf{Fichier :} Ouvrir un fichier local, charger depuis une URL, fermer une table.
+  \item \textbf{Affichage :} Modifier la disposition des fenêtres et de la mise en forme de l'application pour le confort de l'utilisateur.
+  \item \textbf{Aide :} Changer la langue et ouvrir la documentation.
 \end{itemize}
 
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{L'Explorateur de Données}
-La partie gestion de données ou se trouve votre fichier chargé. Cette partie vous permet de trier ou de filtrer les données de votre fichier.
+
+La partie gestion de données où se trouve votre fichier chargé. Cette partie vous permet de trier ou de filtrer les données de votre fichier.
+
 \begin{itemize}
-    \item Pagination des données
-    \item Filtres
-    \item Gestion des colonnes
+  \item Pagination des données
+  \item Filtres
+  \item Gestion des colonnes
 \end{itemize}
 
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Le Panneau d'Actions}
+
 La partie d'affichage et de gestion des graphiques. Elle vous permet de :
+
 \begin{itemize}
-    \item Ajouter un graphique et personnaliser son affichage. 
-    \item Ajouter une image
-    \item Ajouter un texte
+  \item Ajouter un graphique et personnaliser son affichage.
+  \item Ajouter une image.
+  \item Ajouter un texte.
 \end{itemize}
 
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Le Carnet de note}
-Vous permet de visualiser vos donnée sous forme de graphique, d'image ou textuel.
 
-% =========================
+Vous permet de visualiser vos données sous forme de graphique, d'image ou textuel.
+
+% ════════════════════════════════════════════════════════════════════════════
 \section{Configuration de l'Application}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
 \subsection{Fenêtre Paramètres}
 
 \subsubsection{Général}
-Conseillé à la première utilisation de l'application. Choississez votre langue ainsi que vos préférences de démarrage et de fermeture d'application.
+
+Conseillé à la première utilisation de l'application. Choisissez votre langue ainsi que vos préférences de démarrage et de fermeture d'application.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.6\textwidth]{images/parametre.png}
+  \caption{Paramètres de l'application}
+\end{figure}
 
 \subsubsection{Table}
+
 \begin{itemize}
-    \item Sensibilité à la conversion de type correspond à l'exactitude des calculs que l'ordinateur met dans sa performance de conversion de type.
-    \item Afficher ou non les numéros de lignes, les valeurs nulles.
-    \item Ajuster les préférences pour les colonnes
-    \item Caculer automatiquement les Statistiques des colonnes
+  \item \textbf{Sensibilité à la conversion de type} correspond au type définit de la colonne grâce aux types prédominants au sein de la colonne.
+  \item \textbf{Autoriser la saisie manuelle de type} permet de modifier la valeur d'une case.
+  \item Afficher ou non les numéros de lignes, les valeurs nulles.
+  \item Ajuster les préférences pour les colonnes.
+  \item Calculer automatiquement les Statistiques des colonnes.
 \end{itemize}
 
 \subsubsection{Apparence}
 
 \begin{itemize}
-    \item Thème clair / sombre / automatique
-    \item Heures du mode sombre
-    \item Activation FlatLaf
-    \item Taille de police
-    \item Famille de police
+  \item Thème clair / sombre / automatique
+  \item Heures du mode sombre
+  \item Activation FlatLaf (visuel de l'application)
+  \item Taille de police
+  \item Famille de police
 \end{itemize}
 
 \subsubsection{Raccourcis}
 
-\begin{itemize}
-    \item Ctrl + O : Ouvrir
-    \item Ctrl + W : Fermer
-    \item Ctrl + F : Filtres
-    \item Ctrl + , : Paramètres
-    \item Ctrl + Shift + A : Tri croissant
-    \item Ctrl + Shift + D : Tri décroissant
-    \item Ctrl + Z : Annuler
-    \item Ctrl + Y : Rétablir
-    \item Vous pouvez aussi ajouter ou modifier vos propre raccourcis
-\end{itemize}
+\vspace{4pt}
+\begin{tcolorbox}[
+  colback=lightgray,
+  colframe=rulegray,
+  boxrule=0.5pt,
+  arc=4pt,
+  left=10pt, right=10pt, top=8pt, bottom=8pt
+]
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{@{}p{4.5cm} p{4.5cm}@{}}
+  \kbd{Ctrl + O} \quad Ouvrir         & \kbd{Ctrl + W} \quad Fermer \\
+  \kbd{Ctrl + F} \quad Filtres        & \kbd{Ctrl + ,} \quad Paramètres \\
+  \kbd{Ctrl + Shift + A} \quad Tri croissant  & \kbd{Ctrl + Shift + D} \quad Tri décroissant \\
+  \kbd{Ctrl + Z} \quad Annuler        & \kbd{Ctrl + Y} \quad Rétablir \\
+\end{tabular}
+\end{tcolorbox}
 
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 \section{Guide d'Utilisation : Importation et Traitement}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
+Une barre de chargement se situe en bas à droite de l'application. Cliquer dessus vous permet de visualiser les tâches en attente.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/chargement.png}
+  \caption{Chargement}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Importation d'un fichier CSV/Parquet/txt/html}
 
 \begin{enumerate}
-    \item Importer un fichier via "Fichier/Ouvrir" ou une URL via "fichier/Ouvrir une URL".
-    \item Traitement automatique des données. Si erreur voir les conditions de lecture de format disponible (CSV/Parquet/txt/html).
+  \item Importer un fichier via \textbf{Fichier / Ouvrir} ou une URL via \textbf{Fichier / Ouvrir une URL}.
+  \item Traitement automatique des données. Si erreur, voir les conditions de lecture de format disponible (CSV/Parquet/txt/html).
 \end{enumerate}
 
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Manipulation des Colonnes}
 
 \begin{itemize}
-    \item \textbf{Filtre:} Permet de créer des filtres sur les données chargées au sein d'une colonne.
-    \item \textbf{Afficher/Masquer les colonnes:} Permet d'afficher ou de masquer les colonnes vides au sein des données chargées.
-    \item \textbf{Clic droit sur une colonnes:} Ouvre en détail le panneau de gestion de donnée : 
-    \begin{itemize}
-    \item \textbf{Tri:} Ascendent/Descendent, soit du plus petit au plus grand.
-    \item \textbf{Changer de type de données:} Transforme le type de donnée de la colonnes en un autre ( ex: entier -> chiffre à virgule). Certain type ne sont pas compatible au changement et la colonnes deviendra vide
-    \item \textbf{Filtre:} Affecte des filtres personnalisés à la colonne selectionnée.
-    \item \textbf{Statistiques:} Le taux de cardinalité, ou de valeurs nulles (nombres de ligne vide). Ainsi qu'un bouton résumé référencent le : min,max,moyenne,sommes,nombres,valeurs nulles,type, et type natif de la colonne
-    \end{itemize}
+  \item \textbf{Filtre :} Permet de créer des filtres sur les données chargées au sein d'une colonne.
+
+  \item \textbf{Afficher/Masquer les colonnes :} Permet d'afficher ou de masquer les colonnes vides au sein des données chargées.
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{images/filtre.png}
+    \caption{Filtre}
+  \end{figure}
+
+  \item \textbf{Clic droit sur une colonne :} Ouvre en détail le panneau de gestion de donnée :
+
+  \begin{figure}[H]
+    \centering
+    \includegraphics[width=0.3\textwidth]{images/clicDroitColonne.png}
+  \end{figure}
+
+  \begin{itemize}
+    \item \textbf{Tri :} Ascendant/Descendant, soit du plus petit au plus grand.
+    \item \textbf{Changer de type de données :} Transforme le type de donnée de la colonne en un autre (ex : entier $\rightarrow$ chiffre à virgule). Certains types ne sont pas compatibles au changement et la colonne deviendra vide.
+    \item \textbf{Filtre :} Affecte des filtres personnalisés à la colonne sélectionnée.
+    \item \textbf{Statistiques :} Le taux de cardinalité, ou de valeurs nulles (nombre de lignes vides). Ainsi qu'un bouton résumé référençant le : min, max, moyenne, sommes, nombres, valeurs nulles, type, et type natif de la colonne.
+  \end{itemize}
 \end{itemize}
 
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 \section{Module d'Analyse et Statistiques}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
 \subsection{Statistiques}
-En bas de l'écran est écrit le nom du fichier charger, ainsi que le nombres de lignes des colonnes et le nombre de colonne chargé.
-Un résumé des Statistiques d'une colonne est résumé en bas de l'application en fonction du type de donnée selectionnée au sein de la colonne :
+
+En bas de l'écran est écrit le nom du fichier chargé, ainsi que le nombre de lignes des colonnes et le nombre de colonnes chargées. Un résumé des Statistiques d'une colonne est affiché en bas de l'application en fonction du type de donnée sélectionnée au sein de la colonne :
+
 \begin{itemize}
-    \item \textbf{Nombre Entier:} Moyenne, minimum de la colonne, maximum de la colonne
-    \item \textbf{Date:} date la plus récente, date la plus ancienne
-    \item \textbf{Chaine de caractère:} sommes, moyenne, minimum de la colonne, maximum de la colonne
+  \item \textbf{Nombre Entier :} Moyenne, minimum de la colonne, maximum de la colonne.
+  \item \textbf{Date :} Date la plus récente, date la plus ancienne.
+  \item \textbf{Chaîne de caractère :} Sommes, moyenne, minimum de la colonne, maximum de la colonne.
 \end{itemize}
 
-Il est aussi possible d'avoir plus de détail d'une colonne en se référent à la section 3.2 ci-dessus.
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{images/statistiques.png}
+  \caption{Exemple d'une Statistique d'une donnée de type Date}
+\end{figure}
 
-% =========================
+Il est aussi possible d'avoir plus de détail d'une colonne en se référant à la section 3.2 ci-dessus.
+
+% ════════════════════════════════════════════════════════════════════════════
 \section{Visualisation Graphique}
-% =========================
-Le bouton \textbf{Ajouter un graphique:} vous permet d'ajouter et de personnaliser un graphique à l'application. Selectionner une colonne en cliquant dessus pour selectionner la colonnes à transformer en graphique
+% ════════════════════════════════════════════════════════════════════════════
 
+Le bouton \textbf{Ajouter un graphique} vous permet d'ajouter et de personnaliser un graphique à l'application. Sélectionner une colonne en cliquant dessus pour sélectionner la colonne à transformer en graphique.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/interfaceGraphique.png}
+  \caption{Interface de création de graphique}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Types}
 
 \begin{itemize}
-    \item \textbf{Types:} Barres, Camembert, Ligne, Nuages de Points, Radar, Aires
-    \item \textbf{Titre:} Titre du graphique
+  \item \textbf{Titre :} Titre du graphique.
+  \item \textbf{Types :} Barres, Camembert, Ligne, Nuages de Points, Radar, Aires.
 \end{itemize}
 
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.2\textwidth]{images/camembert.png}\hspace{0.5em}
+  \includegraphics[width=0.2\textwidth]{images/aires.png}\hspace{0.5em}
+  \includegraphics[width=0.2\textwidth]{images/barre.png}
 
+  \vspace{0.4cm}
+
+  \includegraphics[width=0.2\textwidth]{images/diagBarre.png}\hspace{0.5em}
+  \includegraphics[width=0.2\textwidth]{images/nuagePoint.png}\hspace{0.5em}
+  \includegraphics[width=0.2\textwidth]{images/radar.png}\hspace{0.5em}
+  \includegraphics[width=0.2\textwidth]{images/trait.png}
+
+  \caption{Exemples des différentes formes possibles}
+\end{figure}
+
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Configuration}
 
 \begin{itemize}
-    \item \textbf{Echelle:} Linéraire, logarithmique, racines carrée
-    \item Nombre de graduation sur les axes
-    \item Afficher/ne pas afficher les Axes. Et les renommer.
+  \item \textbf{Échelle :} Linéaire, logarithmique, racine carrée.
+  \item Nombre de graduations sur les axes.
+  \item Afficher/ne pas afficher les Axes. Et les renommer.
 \end{itemize}
 
+% ────────────────────────────────────────────────────────────────────────────
 \subsection{Ajouter une Image/Texte}
-Les boutons \textbf{Ajouter une image/Ajouter un bloc de texte}, permettent dans le carnet de note de rajouter un bloc de texte personnaliser, ou d'importer une image selectionner.
 
-% =========================
+Les boutons \textbf{Ajouter une image} / \textbf{Ajouter un bloc de texte} permettent dans le carnet de note de rajouter un bloc de texte personnalisé, ou d'importer une image sélectionnée.
+
+% ════════════════════════════════════════════════════════════════════════════
 \section{Carnet de Notes et Export}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
-Le bouton \textbf{Ajouter au carnet de note} lors de la selection d'un résumé d'une donnée permet de l'ajouter à la fenêtres d'affichage (carnet de note) et de l'exporter.
-Le bouton \textbf{d'export} s'affiche en haut du panneau d'affichage lorsqu'une données est affiché ( graphique/image/texte). Elle permet d'exporter le carnet de note au format : HTML, PDF ou markdown.
-De lui donner un thème parmis : Lin, Encre, Sauge, Braise, Havre, Grès. De personnaliser le nom du fichier et enfin d'inclure ou non le titre d'un graphique.
+Le bouton \textbf{Ajouter au carnet de note} lors de la sélection d'un résumé d'une donnée permet de l'ajouter à la fenêtre d'affichage (carnet de note) et de l'exporter. Le bouton \textbf{d'export} s'affiche en haut du panneau d'affichage lorsqu'une donnée est affichée (graphique/image/texte). Elle permet d'exporter le carnet de note au format : HTML, PDF ou markdown. De lui donner un thème parmi : Lin, Encre, Sauge, Braise, Havre, Grès. De personnaliser le nom du fichier et enfin d'inclure ou non le titre d'un graphique.
 
-% =========================
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.5\textwidth]{images/export.png}
+  \caption{Interface de l'export du carnet de notes}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════════════════
 \section{Support Technique}
-% =========================
+% ════════════════════════════════════════════════════════════════════════════
 
-Pour tout problème d'application,
-contactez l'un des administrateur système \textbf{"Aide/A Propos"}.
+Pour tout problème d'application, contactez l'un des administrateurs système via \textbf{Aide / À Propos}.
 
 \end{document}
