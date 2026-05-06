@@ -258,6 +258,7 @@ public final class GUIController extends CoreController {
         }
 
         mainView.getTablePanel().close();
+        mainView.getReportPanel().getSettingView().getDataSettingsPanel().refresh();
         mainView.getBottomBar().setTableInfo("", 0, 0);
         mainView.getBottomBar().clearColumnStats();
     }

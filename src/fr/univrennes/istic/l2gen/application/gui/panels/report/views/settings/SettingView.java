@@ -267,4 +267,33 @@ public class SettingView extends JPanel {
         revalidate();
         repaint();
     }
+
+    public DataSettingsPanel getDataSettingsPanel() {
+        return dataSettingsPanel;
+    }
+
+    public LegendSettingsPanel getLegendSettingsPanel() {
+        return legendSettingsPanel;
+    }
+
+    public AxisSettingsPanel getAxisSettingsPanel() {
+        return axisSettingsPanel;
+    }
+
+    public ColorSettingsPanel getColorSettingsPanel() {
+        return colorSettingsPanel;
+    }
+
+    public ChartSettingsPanel getChartSettingsPanel() {
+        return chartSettingsPanel;
+    }
+
+    public ImageSettingsPanel getImageSettingsPanel() {
+        return imageSettingsPanel;
+    }
+
+    public TextSettingsPanel getTextSettingsPanel() {
+        return textSettingsPanel;
+    }
+
 }

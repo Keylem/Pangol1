@@ -57,12 +57,7 @@ public final class DataSettingsPanel extends SettingSectionPanel {
                 File selectedTable = new File((String) tables.getSelectedItem());
                 DataTable table = TableService.get(selectedTable);
                 if (table != null) {
-                    GUIController.getInstance().setTable(table);
-
-                    clearRows();
-                    build();
-                    revalidate();
-                    repaint();
+                    updateColumnComboBoxes();
                 }
             }
         });
@@ -78,6 +73,10 @@ public final class DataSettingsPanel extends SettingSectionPanel {
 
         addRow(new SettingSeparatorRow(Lang.get("report.setting.data.columns")));
 
+        updateColumnComboBoxes();
+    }
+
+    private void updateColumnComboBoxes() {
         String[] valueCols = getColumnNames(
                 (table, i) -> {
                     if (table.getColumnType(i).isNumeric() || table.getColumnType(i).isDate()) {
@@ -108,7 +107,6 @@ public final class DataSettingsPanel extends SettingSectionPanel {
 
         biggerGroupColumn = new JComboBox<>(colsWithNone);
         addRow(new SettingRowPanel(Lang.get("report.setting.data.col_bigger_group"), biggerGroupColumn));
-
     }
 
     private static interface ColumnFilter {
@@ -116,25 +114,27 @@ public final class DataSettingsPanel extends SettingSectionPanel {
     }
 
     private String[] getColumnNames(ColumnFilter func, boolean showTypes) {
-        return GUIController.getInstance().getTable().map(table -> {
-            List<String> names = new ArrayList<>();
-            for (int i = 0; i < table.getColumnCount(); i++) {
-                if (func.run(table, i)) {
-                    if (showTypes) {
-                        names.add(String.format("(%s) %s", table.getColumnType(i).toString(), table.getColumnName(i)));
-                    } else {
-                        names.add(table.getColumnName(i));
-                    }
+        DataTable table = getTable();
+        if (table == null) {
+            return new String[0];
+        }
+        List<String> names = new ArrayList<>();
+        for (int i = 0; i < table.getColumnCount(); i++) {
+            if (func.run(table, i)) {
+                if (showTypes) {
+                    names.add(String.format("(%s) %s", table.getColumnType(i).toString(), table.getColumnName(i)));
+                } else {
+                    names.add(table.getColumnName(i));
                 }
             }
-            return names.toArray(new String[0]);
-        }).orElse(new String[] {});
+        }
+        return names.toArray(new String[0]);
     }
 
     public DataTable getTable() {
         String selected = (String) tables.getSelectedItem();
-        if (selected.equals(Lang.get("report.setting.data.current_table"))) {
-            selected = currentTablePath.toString();
+        if (selected == null || selected.equals(Lang.get("report.setting.data.current_table"))) {
+            return GUIController.getInstance().getTable().orElse(null);
         }
 
         return TableService.get(new File(selected));
@@ -228,5 +228,11 @@ public final class DataSettingsPanel extends SettingSectionPanel {
                 break;
             }
         }
+    }
+
+    public void refresh() {
+        clearRows();
+        build();
+        revalidate();
     }
 }
