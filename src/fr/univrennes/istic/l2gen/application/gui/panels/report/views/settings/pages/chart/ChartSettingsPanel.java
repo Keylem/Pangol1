@@ -7,6 +7,7 @@ import javax.swing.JTextField;
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
 import fr.univrennes.istic.l2gen.application.core.notebook.NoteBookChart;
 import fr.univrennes.istic.l2gen.application.core.notebook.NoteBookValue;
+import fr.univrennes.istic.l2gen.application.core.table.DataTable;
 import fr.univrennes.istic.l2gen.application.gui.GUIController;
 import fr.univrennes.istic.l2gen.application.gui.panels.report.views.settings.SettingRowPanel;
 import fr.univrennes.istic.l2gen.application.gui.panels.report.views.settings.SettingSectionPanel;
@@ -47,6 +48,10 @@ public final class ChartSettingsPanel extends SettingSectionPanel implements IRe
                         switch (type) {
                                 case PIE -> {
                                         shared.axis().setVisible(false);
+                                }
+                                case AREA -> {
+                                        shared.axis().setVisible(true);
+                                        stackedCheckBox.setEnabled(true);
                                 }
                                 default -> {
                                         shared.axis().setVisible(true);
@@ -105,6 +110,7 @@ public final class ChartSettingsPanel extends SettingSectionPanel implements IRe
                 }
                 chartTypeCombo.setSelectedIndex(chart.getType().ordinal());
                 titleField.setText(chart.getTitle());
+                stackedCheckBox.setSelected(chart.isStacked());
 
                 shared.legend().setLegendVisible(chart.isLegendVisible());
                 shared.legend().setLegendHorizontal(chart.isLegendHorizontal());
@@ -125,6 +131,10 @@ public final class ChartSettingsPanel extends SettingSectionPanel implements IRe
 
                 shared.color().setColorLabels(chart.getColors(), chart.getColorLabels());
 
+                DataTable table = GUIController.getInstance().getTable().orElse(null);
+                if (table != null && chart.getTable() != null && table.getPath() == chart.getTable().getPath()) {
+                        return;
+                }
                 GUIController.getInstance().setTable(chart.getTable());
                 shared.data().setTable(chart.getTable());
 

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+
+import javax.swing.DesktopManager;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -122,6 +124,10 @@ public final class GUIController extends CoreController {
                 parsedDefaultTableUri = URI.create(defaultTable);
             } else {
                 parsedDefaultTableFile = new File(defaultTable);
+                if (!parsedDefaultTableFile.exists()) {
+                    parsedDefaultTableFile = null;
+                    parsedDefaultTableUri = URI.create(stableURI);
+                }
             }
         } catch (Exception e) {
             try {
@@ -428,7 +434,8 @@ public final class GUIController extends CoreController {
     }
 
     public void onOpenDocDialog() {
-        // TODO
+        // TODO: open from resources/doc/pdf
+        // DesktopManager.getDesktop().browse(FileService.getResourceURI("doc/pdf").toURI());
     }
 
     public void onOpenAboutDialog() {

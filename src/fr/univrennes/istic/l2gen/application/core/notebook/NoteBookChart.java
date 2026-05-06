@@ -393,6 +393,10 @@ public final class NoteBookChart implements NoteBookValue {
         return title;
     }
 
+    public boolean isStacked() {
+        return stacked;
+    }
+
     public boolean isLegendVisible() {
         return showLegend;
     }
