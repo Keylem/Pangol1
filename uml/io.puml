@@ -1,0 +1,88 @@
+@startuml
+title io
+
+skinparam classAttributeIconSize 0
+
+class SVGImport {
+  - {static} shapes : List<Class<ISVGShape>>
+  - {static} point : Class<ISVGShape>
+  - {static} pointFieldX : Field
+  - {static} pointFieldY : Field
+  - {static} constructorCache : Map<Class<?>, Constructor<?>>
+  - {static} fieldCache : Map<Class<?>, List<Field>>
+  --
+  + {static} register(Class<T> shape) : void
+  - {static} cachePointFields(Class<ISVGShape> pointClass) : void
+  - {static} createPoint(SVGField pointField, XMLTag tag) : ISVGShape
+  - {static} createPoint(String rawPoint) : ISVGShape
+  - {static} createPointList(String rawPoints) : List<ISVGShape>
+  + {static} load(String filename) : List<ISVGShape>
+  + {static} convert(XMLTag tag) : ISVGShape
+}
+
+class XMLTag {
+  # name : String
+  # content : Optional<String>
+  - attributes : Map<String, XMLAttribute>
+  # children : List<XMLTag>
+  --
+  + getTagName() : String
+  + getTextContent() : Optional<String>
+  + hasTextContent() : boolean
+  + setTextContent(String content) : void
+  + hasAttribute(String name) : boolean
+  + getAttribute(String name) : XMLAttribute
+  + addAttribute(XMLAttribute attr) : void
+  + addAttribute(String name, Object value) : void
+  + removeAttribute(String name) : void
+  + getAttributeCount() : int
+  + attributeStream() : Stream<XMLAttribute>
+  + appendChild(XMLTag child) : void
+  + insertChildAt(int index, XMLTag child) : void
+  + removeChild(XMLTag child) : boolean
+  + hasChildren() : boolean
+  + getChildrenCount() : int
+  + getChildren() : List<XMLTag>
+  + getChildAt(int index) : Optional<XMLTag>
+  + childStream() : Stream<XMLTag>
+  + getFirstChildByName(String tagName) : Optional<XMLTag>
+  + getFirstChild() : Optional<XMLTag>
+  + findFirst(String tagName) : Optional<XMLTag>
+  + findAll(String tagName) : List<XMLTag>
+  + childrenStream() : Stream<XMLTag>
+  + toString() : String
+  + toFormattedString(int depth, boolean pretty, int indentSize) : StringBuilder
+  + toFormattedString(StringBuilder sb, int depth, boolean pretty, int indentSize) : StringBuilder
+  + {static} escape(String text) : String
+  + {static} unescape(String text) : String
+}
+
+class XMLParseException {
+}
+
+class XMLParser {
+  - br : BufferedReader
+  - current : int
+  - index : int
+  --
+  + parse() : XMLTag
+  - parseTag() : XMLTag
+  - parseTagName() : String
+  - parseAttribute() : XMLAttribute
+  - parseAttributeName() : String
+  - parseAttributeValue() : String
+  - parseTextContent() : String
+  - unescapeXML(String text) : String
+  - skipWhitespace() : void
+  - skipComment() : void
+  - skipDeclaration() : void
+  - peek(char expected) : boolean
+  - peek(String expected) : boolean
+  - expect(char expected) : boolean
+  - expect(String expected) : boolean
+  - advance() : void
+}
+
+Exception <|-- XMLParseException
+
+@enduml

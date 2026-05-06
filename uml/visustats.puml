@@ -1,0 +1,142 @@
+@startuml
+title visustats
+
+skinparam classAttributeIconSize 0
+
+abstract class AbstractDataGroupView {
+  # data : DataGroup
+  # spacing : double
+  # center : Point
+  --
+  # {abstract} getTotalElementsHeight() : double
+  # getTotalElementsWidth() : double
+  # {abstract} isAxisEnabled() : boolean
+  # {abstract} getAxisElement() : IShape
+  # {abstract} getElementWidth() : double
+  # {abstract} createElement(Point position) : IDataSetView
+  - getElementCenterAt(int index) : Point
+  # update() : void
+  + setTitle(Label title) : void
+  + setData(DataGroup group) : void
+  + addData(DataSet data) : void
+  + addLegend(Label legend) : void
+  + resize(double px, double py) : void
+  + rotate(double deg) : void
+}
+
+class DataAxisView {
+  - center : Point
+  - totalWidth : double
+  - totalHeight : double
+  - spacing : double
+  - maxValue : double
+  - stepCount : int
+  --
+  - update() : void
+}
+
+class BarDataGroupView {
+  - {static} DEFAULT_AXIS_STEP_COUNT : int
+  - maxHeight : double
+  - barWidth : double
+  --
+  # getTotalElementsHeight() : double
+  # getElementWidth() : double
+  # createElement(Point position) : BarDataSetView
+  # isAxisEnabled() : boolean
+  # getAxisElement() : IShape
+}
+
+class ColumnsDataGroupView {
+  - {static} DEFAULT_AXIS_STEP_COUNT : int
+  - maxHeight : double
+  - barWidth : double
+  - innerSpacing : double
+  --
+  # getTotalElementsHeight() : double
+  # getElementWidth() : double
+  # createElement(Point position) : IDataSetView
+  # isAxisEnabled() : boolean
+  # getAxisElement() : IShape
+}
+
+interface IDataGroupView {
+  + setTitle(Label title) : void
+  + setData(DataGroup group) : void
+  + addData(DataSet dataset) : void
+  + addLegend(Label legend) : void
+}
+
+class PieDataGroupView {
+  # radius : double
+  --
+  # getTotalElementsHeight() : double
+  # getElementWidth() : double
+  # createElement(Point position) : IDataSetView
+  # isAxisEnabled() : boolean
+  # getAxisElement() : IShape
+}
+
+abstract class AbstractDataSetView {
+  # center : Point
+  --
+  + setData(DataSet data) : void
+  + getCenter() : Point
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + rotate(double deg) : void
+}
+
+class BarDataSetView {
+  - barWidth : double
+  - maxHeight : double
+  --
+  + setData(DataSet data) : void
+  + copy() : IShape
+  + getDescription(int indent) : String
+  + getHeight() : double
+  + getWidth() : double
+}
+
+class ColumnsDataSetView {
+  - barWidth : double
+  - spacing : double
+  - maxHeight : double
+  --
+  + setData(DataSet data) : void
+  + copy() : IShape
+  + getDescription(int indent) : String
+  + getHeight() : double
+  + getWidth() : double
+}
+
+interface IDataSetView {
+  + setData(DataSet data) : void
+}
+
+class PieDataSetView {
+  - radius : double
+  --
+  + getWidth() : double
+  + getHeight() : double
+  + getDescription(int indent) : String
+  + copy() : IShape
+  + setData(DataSet data) : void
+  + createSlice(double startAngle, double endAngle) : Path
+}
+
+Group <|-- AbstractDataGroupView
+IDataGroupView <|.. AbstractDataGroupView
+Group <|-- DataAxisView
+AbstractDataGroupView <|-- BarDataGroupView
+AbstractDataGroupView <|-- ColumnsDataGroupView
+IShape <|-- IDataGroupView
+AbstractDataGroupView <|-- PieDataGroupView
+Group <|-- AbstractDataSetView
+IDataSetView <|.. AbstractDataSetView
+AbstractDataSetView <|-- BarDataSetView
+AbstractDataSetView <|-- ColumnsDataSetView
+IShape <|-- IDataSetView
+AbstractDataSetView <|-- PieDataSetView
+
+@enduml

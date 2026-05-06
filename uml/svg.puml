@@ -1,0 +1,279 @@
+@startuml
+title svg
+
+skinparam classAttributeIconSize 0
+
+abstract class AbstractAnimate {
+  - begin : Optional<String>
+  - end : Optional<String>
+  - dur : Optional<AnimationDuration>
+  - min : Optional<AnimationDuration>
+  - max : Optional<AnimationDuration>
+  - restart : Optional<AnimationRestart>
+  - repeatCount : Optional<AnimationCount>
+  - repeatDur : Optional<AnimationDuration>
+  - fill : Optional<AnimationFill>
+  --
+  + begin(String begin) : AbstractAnimate
+  + begin() : String
+  + end(String end) : AbstractAnimate
+  + end() : String
+  + dur(AnimationDuration dur) : AbstractAnimate
+  + dur() : AnimationDuration
+  + min(AnimationDuration min) : AbstractAnimate
+  + min() : AnimationDuration
+  + max(AnimationDuration max) : AbstractAnimate
+  + max() : AnimationDuration
+  + restart(AnimationRestart restart) : AbstractAnimate
+  + restart() : AnimationRestart
+  + repeatCount(AnimationCount repeatCount) : AbstractAnimate
+  + repeatCount() : AnimationCount
+  + repeatDur(AnimationDuration repeatDur) : AbstractAnimate
+  + repeatDur() : AnimationDuration
+  + fill(AnimationFill fill) : AbstractAnimate
+  + fill() : AnimationFill
+  + reset() : void
+  + getStyle() : SVGStyle
+  + getTransform() : SVGTransform
+}
+
+enum AnimationFill {
+  remove
+  freeze
+  auto
+  --
+  + toString() : String
+}
+
+enum AnimationRestart {
+  always
+  when_not_active
+  never
+  --
+  + toString() : String
+}
+
+enum AnimationTransformType {
+  translate
+  scale
+  rotate
+  skewx
+  skewy
+  --
+  + toString() : String
+}
+
+class SVGAnimate {
+  # attributeName : Optional<String>
+  - from : Optional<String>
+  - to : Optional<String>
+  - by : Optional<String>
+  --
+  + attributeName(String attributeName) : SVGAnimate
+  + attributeName() : String
+  + from(String from) : SVGAnimate
+  + from() : String
+  + to(String to) : SVGAnimate
+  + to() : String
+  + by(String by) : SVGAnimate
+  + by() : String
+  + reset() : void
+}
+
+class SVGAnimateMotion {
+  - path : Optional<SVGPath>
+  - keyPoints : Optional<String>
+  - rotate : Optional<String>
+  - origin : Optional<String>
+  --
+  + path(SVGPath path) : SVGAnimateMotion
+  + path() : SVGPath
+  + keyPoints(String keyPoints) : SVGAnimateMotion
+  + keyPoints() : String
+  + rotate(String rotate) : SVGAnimateMotion
+  + rotate() : String
+  + origin(String origin) : SVGAnimateMotion
+  + origin() : String
+  + reset() : void
+}
+
+class SVGAnimateTransform {
+  - attributeName : Optional<String>
+  - type : Optional<AnimationTransformType>
+  - from : Optional<String>
+  - to : Optional<String>
+  - by : Optional<String>
+  - additive : Optional<Boolean>
+  - accumulate : Optional<Boolean>
+  --
+  + attributeName(String attributeName) : SVGAnimateTransform
+  + attributeName() : String
+  + type(AnimationTransformType type) : SVGAnimateTransform
+  + type() : AnimationTransformType
+  + from(String from) : SVGAnimateTransform
+  + from() : String
+  + to(String to) : SVGAnimateTransform
+  + to() : String
+  + by(String by) : SVGAnimateTransform
+  + by() : String
+  + additive(boolean additive) : SVGAnimateTransform
+  + additive() : Boolean
+  + accumulate(boolean accumulate) : SVGAnimateTransform
+  + accumulate() : Boolean
+  + reset() : void
+}
+
+enum ArcCommandType {
+  RELATIVE
+  ABSOLUTE
+}
+
+enum CubicBezierCommandType {
+  SMOOTH_RELATIVE
+  SMOOTH
+  RELATIVE
+  ABSOLUTE
+}
+
+interface IPathCommand {
+  + translate(double dx, double dy) : IPathCommand
+  + getValue() : String
+}
+
+enum MoveCommandType {
+  VERTICAL_RELATIVE
+  VERTICAL
+  HORIZONTAL_RELATIVE
+  HORIZONTAL
+  LINE_RELATIVE
+  LINE
+  RELATIVE
+  ABSOLUTE
+}
+
+enum QuadBezierCommandType {
+  ABSOLUTE
+  RELATIVE
+  SMOOTH
+  SMOOTH_RELATIVE
+}
+
+class SVGPath {
+  - commands : List<IPathCommand>
+  - isDirty : boolean
+  - cachedBox : BoundingBox
+  --
+  + translate(double dx, double dy) : void
+  + close() : SVGPath
+  + move(double x, double y, boolean relative) : SVGPath
+  + line(double x, double y, boolean relative) : SVGPath
+  + horizontal(double value, boolean relative) : SVGPath
+  + vertical(double value, boolean relative) : SVGPath
+  + cubicBezier(double x1, double y1, double x2, double y2, double x, double y, boolean relative) : SVGPath
+  + cubicBezierSmooth(double x2, double y2, double x, double y, boolean relative) : SVGPath
+  + quadBezier(double x1, double y1, double x, double y, boolean relative) : SVGPath
+  + quadBezierSmooth(double x, double y, boolean relative) : SVGPath
+  + arc(double rx, double ry, double xAxisRotation, boolean largeArcFlag, boolean sweepFlag, double x, double y, boolean relative) : SVGPath
+  + reset() : SVGPath
+  - refreshBox() : void
+  + getBoundingBox() : BoundingBox
+  + getDrawCommands() : List<IPathCommand>
+  + hasContent() : boolean
+  + getContent() : String
+}
+
+class ParseCommands {
+  + {static} parse(String raw) : List<IPathCommand>
+  - {static} parseDouble(List<String> tokens, int index) : double
+  - {static} parseFlag(List<String> tokens, int index) : boolean
+  - {static} isNumber(String token) : boolean
+}
+
+class SVGStyle {
+  - strokeWidth : Optional<Double>
+  - strokeColor : Optional<Color>
+  - strokeDashArray : Optional<String>
+  - fillColor : Optional<Color>
+  - fontSize : Optional<Double>
+  - fontFamily : Optional<String>
+  - textAnchor : Optional<String>
+  - alignmentBaseline : Optional<String>
+  --
+  + strokeWidth(double width) : SVGStyle
+  + strokeWidth() : Optional<Double>
+  + strokeColor(Color color) : SVGStyle
+  + strokeColor() : Optional<Color>
+  + strokeDashArray(int values) : SVGStyle
+  + strokeDashArray() : Optional<String>
+  + fillColor(Color color) : SVGStyle
+  + fillColor() : Optional<Color>
+  + fontSize(double size) : SVGStyle
+  + fontSize() : Optional<Double>
+  + fontFamily(String family) : SVGStyle
+  + fontFamily() : Optional<String>
+  + textAnchor(String anchor) : SVGStyle
+  + textAnchor() : Optional<String>
+  + alignmentBaseline(String baseline) : SVGStyle
+  + alignmentBaseline() : Optional<String>
+  + hasContent() : boolean
+  + getContent() : String
+  + copy() : SVGStyle
+}
+
+class Color {
+  + {static} TRANSPARENT : Color
+  + {static} BLACK : Color
+  + {static} WHITE : Color
+  + {static} RED : Color
+  + {static} GREEN : Color
+  + {static} BLUE : Color
+  + {static} ORANGE : Color
+  + {static} PURPLE : Color
+  + {static} CYAN : Color
+  + {static} MAGENTA : Color
+  + {static} YELLOW : Color
+  + {static} GRAY : Color
+  - hex : String
+  --
+  + {static} hex(String hex) : Color
+  + {static} rgb(int r, int g, int b) : Color
+  + {static} rgba(int r, int g, int b, int a) : Color
+  + {static} random() : Color
+  + {static} raw(String raw) : Color
+  + toString() : String
+}
+
+class SVGContentProcessor {
+  + process(Set<TypeElement> annotations, RoundEnvironment roundEnv) : boolean
+}
+
+interface ISVGAttribute {
+  + hasContent() : boolean
+  + getContent() : String
+}
+
+interface ISVGShape {
+  ~ getStyle() : SVGStyle
+  ~ getTransform() : SVGTransform
+}
+
+class SVGPointProcessor {
+  + process(Set<TypeElement> annotations, RoundEnvironment roundEnv) : boolean
+}
+
+class SVGTagProcessor {
+  + process(Set<TypeElement> annotations, RoundEnvironment roundEnv) : boolean
+  - levenshteinDistance(String a, String b) : int
+}
+
+ISVGShape <|.. AbstractAnimate
+AbstractAnimate <|-- SVGAnimate
+AbstractAnimate <|-- SVGAnimateMotion
+AbstractAnimate <|-- SVGAnimateTransform
+ISVGAttribute <|.. SVGPath
+ISVGAttribute <|.. SVGStyle
+AbstractProcessor <|-- SVGContentProcessor
+AbstractProcessor <|-- SVGPointProcessor
+AbstractProcessor <|-- SVGTagProcessor
+
+@enduml

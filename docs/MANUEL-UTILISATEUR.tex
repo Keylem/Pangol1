@@ -1,0 +1,196 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{geometry}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{amssymb}
+
+\geometry{margin=2.5cm}
+
+% Couleurs Pangol1
+\definecolor{primary}{RGB}{46, 125, 50}
+\definecolor{secondary}{RGB}{80, 80, 80}
+
+\titleformat{\section}{\color{primary}\normalfont\Large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\color{primary}\normalfont\large\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\color{primary}\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}
+
+\title{
+    \color{primary}\Huge\textbf{Manuel d'Utilisation}\\[0.5cm]
+    \Large Logiciel de Traitement de Données \textbf{Pangol1}\\[0.2cm]
+    \small Guide Complet : Importation, Analyse et Visualisation
+}
+\author{Documentation Technique Pangol1}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\textbf{Pangol1} est une solution logicielle open source de haute performance spécialisée dans l'importation, le traitement et la visualisation de données structurées massives.
+\end{abstract}
+
+\tableofcontents
+\newpage
+
+% =========================
+\section{Présentation de l'Interface}
+% =========================
+
+L'interface de Pangol1 est conçue pour l'analyse de gros volumes de données. Elle génère ensuite ses données sous forme de graphique définit via des filtres choisis par l'utilisateur
+
+\subsection{Barre de Menu Supérieure}
+
+\begin{itemize}
+    \item \textbf{Fichier :} Ouvrir un fichier local, charger depuis une URL, fermer une table.
+    \item \textbf{Affichage :} Modifier la disposition des fenêtres et de la mise en forme de l'application pour le confort de l'utilisateur
+    \item \textbf{Aide :} Changer la langue et ouvrir la documentation.
+\end{itemize}
+
+\subsection{L'Explorateur de Données}
+La partie gestion de données ou se trouve votre fichier chargé. Cette partie vous permet de trier ou de filtrer les données de votre fichier.
+\begin{itemize}
+    \item Pagination des données
+    \item Filtres
+    \item Gestion des colonnes
+\end{itemize}
+
+\subsection{Le Panneau d'Actions}
+La partie d'affichage et de gestion des graphiques. Elle vous permet de :
+\begin{itemize}
+    \item Ajouter un graphique et personnaliser son affichage. 
+    \item Ajouter une image
+    \item Ajouter un texte
+\end{itemize}
+
+\subsection{Le Carnet de note}
+Vous permet de visualiser vos donnée sous forme de graphique, d'image ou textuel.
+
+% =========================
+\section{Configuration de l'Application}
+% =========================
+
+\subsection{Fenêtre Paramètres}
+
+\subsubsection{Général}
+Conseillé à la première utilisation de l'application. Choississez votre langue ainsi que vos préférences de démarrage et de fermeture d'application.
+
+\subsubsection{Table}
+\begin{itemize}
+    \item Sensibilité à la conversion de type correspond à l'exactitude des calculs que l'ordinateur met dans sa performance de conversion de type.
+    \item Afficher ou non les numéros de lignes, les valeurs nulles.
+    \item Ajuster les préférences pour les colonnes
+    \item Caculer automatiquement les Statistiques des colonnes
+\end{itemize}
+
+\subsubsection{Apparence}
+
+\begin{itemize}
+    \item Thème clair / sombre / automatique
+    \item Heures du mode sombre
+    \item Activation FlatLaf
+    \item Taille de police
+    \item Famille de police
+\end{itemize}
+
+\subsubsection{Raccourcis}
+
+\begin{itemize}
+    \item Ctrl + O : Ouvrir
+    \item Ctrl + W : Fermer
+    \item Ctrl + F : Filtres
+    \item Ctrl + , : Paramètres
+    \item Ctrl + Shift + A : Tri croissant
+    \item Ctrl + Shift + D : Tri décroissant
+    \item Ctrl + Z : Annuler
+    \item Ctrl + Y : Rétablir
+    \item Vous pouvez aussi ajouter ou modifier vos propre raccourcis
+\end{itemize}
+
+% =========================
+\section{Guide d'Utilisation : Importation et Traitement}
+% =========================
+
+\subsection{Importation d'un fichier CSV/Parquet/txt/html}
+
+\begin{enumerate}
+    \item Importer un fichier via "Fichier/Ouvrir" ou une URL via "fichier/Ouvrir une URL".
+    \item Traitement automatique des données. Si erreur voir les conditions de lecture de format disponible (CSV/Parquet/txt/html).
+\end{enumerate}
+
+\subsection{Manipulation des Colonnes}
+
+\begin{itemize}
+    \item \textbf{Filtre:} Permet de créer des filtres sur les données chargées au sein d'une colonne.
+    \item \textbf{Afficher/Masquer les colonnes:} Permet d'afficher ou de masquer les colonnes vides au sein des données chargées.
+    \item \textbf{Clic droit sur une colonnes:} Ouvre en détail le panneau de gestion de donnée : 
+    \begin{itemize}
+    \item \textbf{Tri:} Ascendent/Descendent, soit du plus petit au plus grand.
+    \item \textbf{Changer de type de données:} Transforme le type de donnée de la colonnes en un autre ( ex: entier -> chiffre à virgule). Certain type ne sont pas compatible au changement et la colonnes deviendra vide
+    \item \textbf{Filtre:} Affecte des filtres personnalisés à la colonne selectionnée.
+    \item \textbf{Statistiques:} Le taux de cardinalité, ou de valeurs nulles (nombres de ligne vide). Ainsi qu'un bouton résumé référencent le : min,max,moyenne,sommes,nombres,valeurs nulles,type, et type natif de la colonne
+    \end{itemize}
+\end{itemize}
+
+% =========================
+\section{Module d'Analyse et Statistiques}
+% =========================
+
+\subsection{Statistiques}
+En bas de l'écran est écrit le nom du fichier charger, ainsi que le nombres de lignes des colonnes et le nombre de colonne chargé.
+Un résumé des Statistiques d'une colonne est résumé en bas de l'application en fonction du type de donnée selectionnée au sein de la colonne :
+\begin{itemize}
+    \item \textbf{Nombre Entier:} Moyenne, minimum de la colonne, maximum de la colonne
+    \item \textbf{Date:} date la plus récente, date la plus ancienne
+    \item \textbf{Chaine de caractère:} sommes, moyenne, minimum de la colonne, maximum de la colonne
+\end{itemize}
+
+Il est aussi possible d'avoir plus de détail d'une colonne en se référent à la section 3.2 ci-dessus.
+
+% =========================
+\section{Visualisation Graphique}
+% =========================
+Le bouton \textbf{Ajouter un graphique:} vous permet d'ajouter et de personnaliser un graphique à l'application. Selectionner une colonne en cliquant dessus pour selectionner la colonnes à transformer en graphique
+
+\subsection{Types}
+
+\begin{itemize}
+    \item \textbf{Types:} Barres, Camembert, Ligne, Nuages de Points, Radar, Aires
+    \item \textbf{Titre:} Titre du graphique
+\end{itemize}
+
+
+\subsection{Configuration}
+
+\begin{itemize}
+    \item \textbf{Echelle:} Linéraire, logarithmique, racines carrée
+    \item Nombre de graduation sur les axes
+    \item Afficher/ne pas afficher les Axes. Et les renommer.
+\end{itemize}
+
+\subsection{Ajouter une Image/Texte}
+Les boutons \textbf{Ajouter une image/Ajouter un bloc de texte}, permettent dans le carnet de note de rajouter un bloc de texte personnaliser, ou d'importer une image selectionner.
+
+% =========================
+\section{Carnet de Notes et Export}
+% =========================
+
+Le bouton \textbf{Ajouter au carnet de note} lors de la selection d'un résumé d'une donnée permet de l'ajouter à la fenêtres d'affichage (carnet de note) et de l'exporter.
+Le bouton \textbf{d'export} s'affiche en haut du panneau d'affichage lorsqu'une données est affiché ( graphique/image/texte). Elle permet d'exporter le carnet de note au format : HTML, PDF ou markdown.
+De lui donner un thème parmis : Lin, Encre, Sauge, Braise, Havre, Grès. De personnaliser le nom du fichier et enfin d'inclure ou non le titre d'un graphique.
+
+% =========================
+\section{Support Technique}
+% =========================
+
+Pour tout problème d'application,
+contactez l'un des administrateur système \textbf{"Aide/A Propos"}.
+
+\end{document}

@@ -1,0 +1,322 @@
+@startuml
+title application
+
+skinparam classAttributeIconSize 0
+
+class Config {
+  - {static} prefs : Preferences
+  --
+  + {static} get() : Preferences
+}
+
+abstract class CoreApp {
+  # controller : Controller
+  --
+  + getController() : CoreController
+  + {abstract} start() : void
+}
+
+abstract class CoreController {
+  + {abstract} onStart() : void
+  + {abstract} onStop() : void
+}
+
+class Filter {
+  - type : FilterType
+  - columnIndex : int
+  - ascending : boolean
+  - n : int
+  - min : double
+  - max : double
+  - searchTerm : String
+  --
+  + {static} sort(int columnIndex, boolean ascending) : Filter
+  + {static} topN(int columnIndex, int n) : Filter
+  + {static} bottomN(int columnIndex, int n) : Filter
+  + {static} byRange(int columnIndex, double min, double max) : Filter
+  + {static} showEmpty(int columnIndex) : Filter
+  + {static} hideEmpty(int columnIndex) : Filter
+  + {static} search(int columnIndex, String searchTerm) : Filter
+  + getType() : FilterType
+  + getColumnIndex() : int
+  + isAscending() : boolean
+  + getN() : int
+  + getMin() : double
+  + getMax() : double
+  + getSearchTerm() : String
+}
+
+enum FilterType {
+  SORT
+  TOP_N
+  BOTTOM_N
+  RANGE
+  EMPTY
+  NOT_EMPTY
+  SEARCH
+}
+
+class Ico {
+  + {static} get(String path) : FlatSVGIcon
+}
+
+class Lang {
+  - {static} instance : Lang
+  - bundle : ResourceBundle
+  - locale : Locale
+  --
+  + {static} setLocale(Locale locale) : void
+  + {static} getLocale() : Locale
+  + {static} get(String key) : String
+  + {static} get(String key, Object args) : String
+  + {static} isSupported(Locale locale) : boolean
+  + {static} getDefaultLocale() : Locale
+}
+
+class FileService {
+  + {static} getExtension(File file) : String
+  + {static} getRemoteFileName(HttpURLConnection connection, URL url) : String
+}
+
+class StatisticsDialog {
+  - content : String
+  - addedToNotebook : boolean
+  --
+  - build() : void
+  - buildAddToNotebookAction() : ActionListener
+  - buildCloseAction() : ActionListener
+  + isAddedToNotebook() : boolean
+}
+
+class GUIApp {
+  + start() : void
+}
+
+class GUIController {
+  - mainView : MainView
+  - currentTable : DataTable
+  --
+  + onStart() : void
+  + onStop() : void
+  + setMainView(MainView frame) : void
+  + getMainView() : MainView
+  + setLoading(boolean isLoading) : void
+  + setStatus(String status) : void
+  + getTable() : Optional<DataTable>
+  + setTable(DataTable table) : void
+  + onCloseTable() : void
+  + onColumnSelected(int columnIndex) : void
+  + onColumnSortRequested(int columnIndex, boolean ascending) : void
+  + onFilterSearchRequested(int columnIndex, String searchTerm) : void
+  + onFilterTopNRequested(int columnIndex, int n, boolean top) : void
+  + onFilterByRangeRequested(int columnIndex, double minValue, double maxValue) : void
+  + onFilterEmptyRequested(int columnIndex, boolean showEmpty) : void
+  + onFilterCleared(int columnIndex) : void
+  + onFilterReset() : void
+  + onException(Exception e) : void
+  + onOpenFilterDialog() : void
+  + onOpenFileDialog() : void
+  + onOpenUrlDialog() : void
+  + onOpenDocDialog() : void
+  + onOpenAboutDialog() : void
+  + onLanguageChange(Locale locale) : void
+  + onComputeSummaryRequested(int columnIndex) : void
+  + onComputeNullRateRequested(int columnIndex) : void
+  + onComputeCardinalityRatioRequested(int columnIndex) : void
+  + onComputeInterquartileRangeRequested(int columnIndex) : void
+  + onComputeSkewnessRequested(int columnIndex) : void
+  + onComputeCoefficientOfVariationRequested(int columnIndex) : void
+  + onComputeCorrelationRequested(int columnIndex, int targetColumnIndex) : void
+}
+
+class BottomBar {
+  - statusLabel : JLabel
+  - nameLabel : JLabel
+  - rowsLabel : JLabel
+  - colsLabel : JLabel
+  - sumLabel : JLabel
+  - avgLabel : JLabel
+  - minLabel : JLabel
+  - maxLabel : JLabel
+  - loadingBar : JProgressBar
+  --
+  + setStatus(String message) : void
+  + setTableInfo(String name, int rows, int cols) : void
+  + setColumnStats(Optional<String> min, Optional<String> max, Optional<String> avg, Optional<String> sum) : void
+  + clearColumnStats() : void
+  + setLoading(boolean isLoading) : void
+  - createInfoLabel(String text) : JLabel
+  - makeSeparator() : JSeparator
+}
+
+class MainView {
+  - tablePanel : TablePanel
+  - reportPanel : ReportPanel
+  - topBar : TopBar
+  - bottomBar : BottomBar
+  - mainSplit : JSplitPane
+  --
+  - build() : void
+  + getTablePanel() : TablePanel
+  + getReportPanel() : ReportPanel
+  + getTopBar() : TopBar
+  + getBottomBar() : BottomBar
+}
+
+class TopBar {
+  - controller : GUIController
+  --
+  - build() : void
+}
+
+class ReportPanel {
+  - controller : GUIController
+  - settingView : SettingView
+  - noteBook : NoteBook
+  - mainSplit : JSplitPane
+  --
+  - build() : void
+}
+
+class Chart {
+  - diagram : SVGDiagram
+  --
+  + load(ISVGShape shape) : void
+  # paintComponent(Graphics g) : void
+}
+
+class NoteBook {
+  - controller : GUIController
+  --
+  - build() : void
+}
+
+class TablePanel {
+  - controller : GUIController
+  - cardLayout : CardLayout
+  - tableListView : TableListView
+  - tableDataView : TableDataView
+  --
+  + getTable() : TableDataView
+  + open(DataTable table) : boolean
+  + close() : void
+  + refresh() : void
+}
+
+enum TableViewState {
+  EMPTY
+  LIST
+  TABLE
+}
+
+class TableColumnContextMenu {
+  - controller : GUIController
+  - tableView : TableDataView
+  - table : DataTable
+  - columnIndex : int
+  --
+  - buildSortMenu() : JMenu
+  - buildFilterMenu() : JMenu
+  - buildStatsMenu() : JMenu
+  - columnSelector(JMenu menu, Function<Integer, Boolean> condition, Function<Integer, Void> action) : void
+}
+
+class TableDataView {
+  - tableModel : TableModel
+  - tableView : JTable
+  - paginationBar : TablePagination
+  --
+  + open(DataTable table) : void
+  + close() : void
+  + refresh() : void
+  + getTableView() : JTable
+  + getTableModel() : TableModel
+  + hideColumn(int columnIndex) : void
+  + renameColumn(int columnIndex, String newName) : void
+  + showAllColumns() : void
+  + hideEmptyColumns() : void
+  + selectColumn(int columnIndex) : void
+  - updateHeaderIcons() : void
+  - adjustColumnWidths() : void
+}
+
+class TableModel {
+  - {static} DEFAULT_PAGE_SIZE : int
+  - tableView : TableDataView
+  - table : DataTable
+  - pageSize : int
+  - pageIndex : int
+  --
+  + open(DataTable dataTable) : void
+  + close() : void
+  + getTable() : Optional<DataTable>
+  + goToPage(int newPageIndex) : void
+  + nextPage() : void
+  + previousPage() : void
+  + getPageIndex() : int
+  + getTotalPages() : int
+  + getPageSize() : int
+  + setPageSize(int newPageSize) : void
+  + getTotalRowCount() : int
+  - getPageStartRow() : int
+  - getPageEndRow() : int
+  - prefetchCurrentPage() : void
+  + getRowCount() : int
+  + getColumnCount() : int
+  + getColumnName(int columnIndex) : String
+  + getValueAt(int rowIndex, int columnIndex) : Object
+  + isCellEditable(int row, int col) : boolean
+}
+
+class TablePagination {
+  - {static} PAGE_SIZE_OPTIONS : int
+  - tableModel : TableModel
+  - pageInfoLabel : JLabel
+  - firstPageButton : JButton
+  - previousPageButton : JButton
+  - nextPageButton : JButton
+  - lastPageButton : JButton
+  - pageSizeComboBox : JComboBox<String>
+  --
+  + reload() : void
+}
+
+class TableToolBar {
+}
+
+class EmptyView {
+}
+
+class TableListView {
+  - listModel : DefaultTableModel
+  --
+  + refresh() : void
+  - formatSize(long size) : String
+  + isEmpty() : boolean
+}
+
+class Pangol1 {
+  + {static} DEBUG_MODE : boolean
+  --
+  + {static} main(String args) : void
+}
+
+JDialog <|-- StatisticsDialog
+CoreApp <|-- GUIApp
+CoreController <|-- GUIController
+JPanel <|-- BottomBar
+JFrame <|-- MainView
+JMenuBar <|-- TopBar
+JPanel <|-- ReportPanel
+JPanel <|-- Chart
+JPanel <|-- NoteBook
+JPanel <|-- TablePanel
+JPopupMenu <|-- TableColumnContextMenu
+JPanel <|-- TableDataView
+AbstractTableModel <|-- TableModel
+JPanel <|-- TablePagination
+JToolBar <|-- TableToolBar
+JPanel <|-- EmptyView
+JPanel <|-- TableListView
+
+@enduml

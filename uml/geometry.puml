@@ -1,0 +1,218 @@
+@startuml
+title geometry
+
+skinparam classAttributeIconSize 0
+
+abstract class AbstractShape {
+  # style : SVGStyle
+  # transform : SVGTransform
+  --
+  + getDescription(int indent) : String
+  + rotate(double deg) : void
+  + getStyle() : SVGStyle
+  + getTransform() : SVGTransform
+}
+
+class Circle {
+  - radius : double
+  - center : Point
+  --
+  + getHeight() : double
+  + getWidth() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + rotate(double deg) : void
+  + copy() : IShape
+}
+
+class Ellipse {
+  - center : Point
+  - radius : Point
+  --
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + copy() : IShape
+}
+
+class Line {
+  - start : Point
+  - end : Point
+  --
+  + getStart() : Point
+  + getEnd() : Point
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + copy() : IShape
+}
+
+class Polygon {
+  - vertices : List<Point>
+  --
+  + addVertex(Point p) : void
+  + addVertex(double x, double y) : void
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + resize(double dx, double dy) : void
+  + move(double dx, double dy) : void
+  + rotate(double deg) : void
+  + copy() : IShape
+}
+
+class PolyLine {
+  - vertices : List<Point>
+  --
+  + addVertex(Point pt) : void
+  + addVertex(double x, double y) : void
+  + setVertex(int index, Point pt) : void
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double sx, double sy) : void
+  + rotate(double deg) : void
+  + copy() : IShape
+}
+
+class Rectangle {
+  - position : Point
+  - size : Point
+  - radius : Point
+  --
+  + getHeight() : double
+  + getWidth() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + radius(double rx, double ry) : void
+  + copy() : IShape
+}
+
+class Text {
+  - text : String
+  - center : Point
+  --
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + copy() : IShape
+}
+
+class Triangle {
+  - vertices : List<Point>
+  --
+  + getVertices() : List<Point>
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double sx, double sy) : void
+  + rotate(double deg) : void
+  - scalePoint(Point p, Point c, double sx, double sy) : Point
+  - rotatePoint(Point point, Point center, double rad) : Point
+  + copy() : IShape
+}
+
+class Group {
+  # elements : List<IShape>
+  --
+  + add(IShape child) : void
+  + get(int index) : IShape
+  + getElements() : List<IShape>
+  + getCenter() : Point
+  + getHeight() : double
+  + getWidth() : double
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + rotate(double deg) : void
+  + copy() : IShape
+}
+
+interface IShape {
+  ~ getWidth() : double
+  ~ getHeight() : double
+  ~ getCenter() : Point
+  ~ getStyle() : SVGStyle
+  ~ getTransform() : SVGTransform
+  ~ getDescription(int indent) : String
+  ~ move(double dx, double dy) : void
+  ~ resize(double px, double py) : void
+  ~ rotate(double deg) : void
+  ~ copy() : IShape
+}
+
+class Path {
+  - path : SVGPath
+  --
+  + draw() : SVGPath
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + moveCenter(Point center) : void
+  + resize(double scaleX, double scaleY) : void
+  + rotate(double degrees) : void
+  + copy() : IShape
+}
+
+class Point {
+  - x : double
+  - y : double
+  --
+  + getX() : double
+  + getY() : double
+  + setX(double x) : void
+  + setY(double y) : void
+  + set(double x, double y) : void
+  + add(double dx, double dy) : Point
+  + add(Point p) : Point
+  + mult(double dx, double dy) : Point
+  + mult(Point p) : Point
+  + getWidth() : double
+  + getHeight() : double
+  + getCenter() : Point
+  + getStyle() : SVGStyle
+  + getTransform() : SVGTransform
+  + getDescription(int indent) : String
+  + move(double dx, double dy) : void
+  + resize(double px, double py) : void
+  + rotate(double deg) : void
+  + copy() : IShape
+  + toString() : String
+  + equals(Object e) : boolean
+}
+
+IShape <|.. AbstractShape
+AbstractShape <|-- Circle
+AbstractShape <|-- Ellipse
+AbstractShape <|-- Line
+AbstractShape <|-- Polygon
+AbstractShape <|-- PolyLine
+AbstractShape <|-- Rectangle
+AbstractShape <|-- Text
+AbstractShape <|-- Triangle
+AbstractShape <|-- Group
+ISVGShape <|-- IShape
+AbstractShape <|-- Path
+IShape <|.. Point
+
+@enduml

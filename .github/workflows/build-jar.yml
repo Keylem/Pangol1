@@ -1,0 +1,27 @@
+name: Build
+on: [release]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build JAR with Maven
+        run: mvn -B package -DskipTests
+
+      - name: Prepare artifact
+        run: cp target/Pangol1-1.0-SNAPSHOT.jar Pangol1.jar
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pangol1
+          path: Pangol1.jar
