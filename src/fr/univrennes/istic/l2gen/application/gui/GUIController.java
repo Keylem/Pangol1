@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-import javax.swing.DesktopManager;
+import java.awt.Desktop;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
@@ -434,8 +434,14 @@ public final class GUIController extends CoreController {
     }
 
     public void onOpenDocDialog() {
-        // TODO: open from resources/doc/pdf
-        // DesktopManager.getDesktop().browse(FileService.getResourceURI("doc/pdf").toURI());
+        // TODO: open from resources/doc/MANUAL.pdf
+        try {
+            URI manualUri = getClass().getResource("/doc/MANUAL.pdf").toURI();
+            Desktop.getDesktop().browse(manualUri);
+        } catch (Exception e) {
+            onException(e);
+        }
+
     }
 
     public void onOpenAboutDialog() {
