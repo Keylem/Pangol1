@@ -44,6 +44,8 @@ public final class TableToolBar extends JToolBar {
                                 tablePanel.refresh();
                         });
                 });
+                clearFiltersButton.setVisible(
+                                tableView.getTableModel().getTable().map(t -> !t.getFilters().isEmpty()).orElse(false));
 
                 showAllColumnsButton = new JButton(Lang.get("tabletoolbar.show_all_columns"),
                                 Ico.get("icons/show.svg"));
@@ -93,5 +95,7 @@ public final class TableToolBar extends JToolBar {
         public void refresh() {
                 showAllColumnsButton.setVisible(tableView.hasHiddenColumns());
                 hideEmptyColumnsButton.setVisible(!tableView.hasHiddenColumns());
+                clearFiltersButton.setVisible(
+                                tableView.getTableModel().getTable().map(t -> !t.getFilters().isEmpty()).orElse(false));
         }
 }

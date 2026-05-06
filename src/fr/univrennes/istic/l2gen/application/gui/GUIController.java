@@ -271,6 +271,8 @@ public final class GUIController extends CoreController {
         List<Filter> filters = FilterDialog.show(mainView, currentTable);
         currentTable.clearFilters();
         currentTable.addFilters(filters);
+
+        mainView.getTablePanel().refresh();
     }
 
     public void onOpenFileDialog() {

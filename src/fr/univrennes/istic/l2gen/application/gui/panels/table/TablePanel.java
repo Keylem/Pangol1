@@ -54,6 +54,7 @@ public final class TablePanel extends JPanel {
 
     public void refresh() {
         tableListView.refresh();
+        tableDataView.refresh();
 
         if (GUIController.getInstance().getTable().isEmpty()) {
             if (tableListView.isEmpty()) {

@@ -27,13 +27,15 @@ import fr.univrennes.istic.l2gen.application.gui.dialog.stats.StatisticsDialog;
 public final class TableColumnContextMenu extends JPopupMenu {
 
         private final DataTable table;
-        private final int columnIndex;
+        private final int tableIndex;
         private final DataType columnType;
+        private final TableDataView tableView;
 
-        public TableColumnContextMenu(TableDataView tableView, int columnIndex) {
+        public TableColumnContextMenu(TableDataView tableView, int tableIndex) {
                 this.table = tableView.getTableModel().getTable().get();
-                this.columnIndex = columnIndex;
-                this.columnType = table.getColumnType(columnIndex);
+                this.tableView = tableView;
+                this.tableIndex = tableIndex;
+                this.columnType = table.getColumnType(tableIndex);
 
                 add(buildSortMenu());
                 addSeparator();
@@ -51,7 +53,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                         int confirm = JOptionPane.showConfirmDialog(tableView,
                                                         Lang.get("tablecolumnmenu.change_type.confirm",
                                                                         tableView.getTableView()
-                                                                                        .getColumnName(columnIndex),
+                                                                                        .getColumnName(tableIndex),
                                                                         typeDisplayName),
                                                         Lang.get("tablecolumnmenu.change_type.confirm_title"),
                                                         JOptionPane.YES_NO_OPTION);
@@ -59,11 +61,11 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                 String taskId = GUIController.getInstance().addTask(
                                                                 Lang.get("task.table.change_type",
                                                                                 tableView.getTableView().getColumnName(
-                                                                                                columnIndex),
+                                                                                                tableIndex),
                                                                                 typeDisplayName),
                                                                 TaskStatus.RUNNING);
 
-                                                boolean success = table.setColumnType(columnIndex, type);
+                                                boolean success = table.setColumnType(tableIndex, type);
                                                 GUIController.getInstance().updateTaskStatus(taskId,
                                                                 success ? TaskStatus.SUCCESS : TaskStatus.FAILED);
                                         }
@@ -77,15 +79,16 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 renameColumnItem.addActionListener(e -> {
                         String newName = JOptionPane.showInputDialog(tableView,
                                         Lang.get("tablecolumnmenu.enter_new_name"),
-                                        tableView.getTableView().getColumnName(columnIndex));
+                                        tableView.getColumnName(tableIndex));
                         if (newName != null && !newName.isBlank()) {
-                                tableView.renameColumn(columnIndex, newName);
+                                tableView.renameColumn(tableView.getTableToViewIndex(tableIndex), newName);
+                                tableView.refresh();
                         }
                 });
                 add(renameColumnItem);
 
                 JMenuItem hideColumnItem = new JMenuItem(Lang.get("tablecolumnmenu.hide"));
-                hideColumnItem.addActionListener(e -> tableView.hideColumn(columnIndex));
+                hideColumnItem.addActionListener(e -> tableView.hideColumn(tableView.getTableToViewIndex(tableIndex)));
 
                 add(hideColumnItem);
         }
@@ -96,7 +99,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 JMenuItem sortAscendingItem = new JMenuItem(Lang.get("tablecolumnmenu.sort.ascending"));
                 sortAscendingItem.addActionListener(e -> {
                         table.clearFilters();
-                        table.addFilter(Filter.sort(columnIndex, true));
+                        table.addFilter(Filter.sort(tableIndex, true));
                         GUIController.getInstance().getMainView().getTablePanel().refresh();
                 });
 
@@ -104,7 +107,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 sortDescendingItem
                                 .addActionListener(e -> {
                                         table.clearFilters();
-                                        table.addFilter(Filter.sort(columnIndex, false));
+                                        table.addFilter(Filter.sort(tableIndex, false));
                                         GUIController.getInstance().getMainView().getTablePanel().refresh();
                                 });
 
@@ -127,7 +130,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 Lang.get("tablecolumnmenu.filter.length.error"))
                                                                 .get();
                                                 if (length > 0) {
-                                                        table.addFilter(Filter.topN(columnIndex, length));
+                                                        table.addFilter(Filter.topN(tableIndex, length));
                                                 }
                                         }
                                         case INTEGER, DOUBLE -> {
@@ -136,7 +139,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 Lang.get("tablecolumnmenu.filter.topn"),
                                                                 Lang.get("tablecolumnmenu.filter.double.error"))
                                                                 .get();
-                                                table.addFilter(Filter.topN(columnIndex, value));
+                                                table.addFilter(Filter.topN(tableIndex, value));
                                         }
                                         case DATE -> {
                                                 java.util.Date date = InputDateDialog.show(
@@ -146,11 +149,12 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 .get();
 
                                                 Timestamp sqlDate = new Timestamp(date.getTime());
-                                                table.addFilter(Filter.topN(columnIndex, sqlDate));
+                                                table.addFilter(Filter.topN(tableIndex, sqlDate));
                                         }
                                         default -> {
                                         }
                                 }
+                                tableView.refresh();
                         } catch (Exception ignored) {
                         }
 
@@ -167,7 +171,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 Lang.get("tablecolumnmenu.filter.length.error"))
                                                                 .get();
                                                 if (length > 0) {
-                                                        table.addFilter(Filter.bottomN(columnIndex, length));
+                                                        table.addFilter(Filter.bottomN(tableIndex, length));
                                                 }
                                         }
                                         case INTEGER, DOUBLE -> {
@@ -176,7 +180,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 Lang.get("tablecolumnmenu.filter.bottomn"),
                                                                 Lang.get("tablecolumnmenu.filter.double.error"))
                                                                 .get();
-                                                table.addFilter(Filter.bottomN(columnIndex, value));
+                                                table.addFilter(Filter.bottomN(tableIndex, value));
                                         }
                                         case DATE -> {
                                                 java.util.Date date = InputDateDialog.show(
@@ -186,11 +190,13 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 .get();
 
                                                 Timestamp sqlDate = new Timestamp(date.getTime());
-                                                table.addFilter(Filter.bottomN(columnIndex, sqlDate));
+                                                table.addFilter(Filter.bottomN(tableIndex, sqlDate));
                                         }
                                         default -> {
                                         }
                                 }
+
+                                tableView.refresh();
                         } catch (Exception ignored) {
                         }
                 });
@@ -211,7 +217,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 Lang.get("tablecolumnmenu.filter.length.error")).get();
                                                 maxLength = Math.max(maxLength, minLength);
                                                 minLength = Math.min(minLength, maxLength);
-                                                table.addFilter(Filter.byRange(columnIndex, minLength, maxLength));
+                                                table.addFilter(Filter.byRange(tableIndex, minLength, maxLength));
                                         }
                                         case INTEGER, DOUBLE -> {
                                                 double minValue = InputDoubleDialog.show(
@@ -226,7 +232,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                                 .get();
                                                 maxValue = Math.max(maxValue, minValue);
                                                 minValue = Math.min(minValue, maxValue);
-                                                table.addFilter(Filter.byRange(columnIndex, minValue, maxValue));
+                                                table.addFilter(Filter.byRange(tableIndex, minValue, maxValue));
                                         }
                                         case DATE -> {
                                                 java.util.Date minDate = InputDateDialog.show(
@@ -244,25 +250,35 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                         minDate = maxDate;
                                                         maxDate = temp;
                                                 }
-                                                table.addFilter(Filter.byRange(columnIndex,
+                                                table.addFilter(Filter.byRange(tableIndex,
                                                                 new Timestamp(minDate.getTime()),
                                                                 new Timestamp(maxDate.getTime())));
                                         }
                                         default -> {
                                         }
                                 }
+                                tableView.refresh();
                         } catch (Exception ignored) {
                         }
                 });
 
                 JMenuItem filterEmptyItem = new JMenuItem(Lang.get("tablecolumnmenu.filter.empty"));
-                filterEmptyItem.addActionListener(e -> table.addFilter(Filter.showEmpty(columnIndex)));
+                filterEmptyItem.addActionListener(e -> {
+                        table.addFilter(Filter.showEmpty(tableIndex));
+                        tableView.refresh();
+                });
 
                 JMenuItem filterNonEmptyItem = new JMenuItem(Lang.get("tablecolumnmenu.filter.non_empty"));
-                filterNonEmptyItem.addActionListener(e -> table.addFilter(Filter.hideEmpty(columnIndex)));
+                filterNonEmptyItem.addActionListener(e -> {
+                        table.addFilter(Filter.hideEmpty(tableIndex));
+                        tableView.refresh();
+                });
 
                 JMenuItem clearFilterItem = new JMenuItem(Lang.get("tablecolumnmenu.filter.clear"));
-                clearFilterItem.addActionListener(e -> table.clearColumnFilter(columnIndex));
+                clearFilterItem.addActionListener(e -> {
+                        table.clearColumnFilter(tableIndex);
+                        tableView.refresh();
+                });
 
                 filterMenu.add(filterTopNItem);
                 filterMenu.add(filterBottomNItem);
@@ -281,9 +297,9 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 JMenu stats = new JMenu(Lang.get("tablecolumnmenu.stats"));
                 JMenuItem summaryItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.summary"));
                 summaryItem.addActionListener(e -> {
-                        String summary = StatisticService.computeSummary(table, columnIndex);
+                        String summary = StatisticService.computeSummary(table, tableIndex);
                         StatisticsDialog dialog = new StatisticsDialog(GUIController.getInstance().getMainView(),
-                                        Lang.get("statistics.summary.title.column", table.getColumnName(columnIndex)),
+                                        Lang.get("statistics.summary.title.column", table.getColumnName(tableIndex)),
                                         summary);
                         showStatsDialog(dialog, summary);
                 });
@@ -291,13 +307,13 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                 JMenuItem nullRateItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.null_rate"));
                 nullRateItem.addActionListener(e -> {
-                        OptionalDouble nullRateOpt = StatisticService.computeNullRate(table, columnIndex);
+                        OptionalDouble nullRateOpt = StatisticService.computeNullRate(table, tableIndex);
                         String nullRateStr = nullRateOpt.isPresent() ? String.format("%.2f%%",
                                         nullRateOpt.getAsDouble() * 100) : "N/A";
 
                         StatisticsDialog dialog = new StatisticsDialog(GUIController.getInstance().getMainView(),
                                         Lang.get("statistics.null_rate.title",
-                                                        table.getColumnName(columnIndex)),
+                                                        table.getColumnName(tableIndex)),
                                         Lang.get("statistics.null_rate.content", nullRateStr));
                         showStatsDialog(dialog, Lang.get("statistics.null_rate.content", nullRateStr));
                 });
@@ -308,7 +324,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                 .addActionListener(e -> {
                                         OptionalDouble cardinalityRatioOpt = StatisticService.computeCardinalityRatio(
                                                         table,
-                                                        columnIndex);
+                                                        tableIndex);
                                         String cardinalityRatioStr = cardinalityRatioOpt.isPresent()
                                                         ? String.format("%.2f%%",
                                                                         cardinalityRatioOpt.getAsDouble() * 100)
@@ -316,7 +332,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                         StatisticsDialog dialog = new StatisticsDialog(
                                                         GUIController.getInstance().getMainView(),
                                                         Lang.get("statistics.cardinality_ratio.title",
-                                                                        table.getColumnName(columnIndex)),
+                                                                        table.getColumnName(tableIndex)),
                                                         Lang.get("statistics.cardinality_ratio.content",
                                                                         cardinalityRatioStr));
                                         showStatsDialog(dialog,
@@ -325,20 +341,20 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                 });
                 stats.add(cardinalityRatioItem);
 
-                if (this.table.getColumnType(columnIndex).isNumeric()) {
+                if (this.table.getColumnType(tableIndex).isNumeric()) {
                         JMenuItem interquartileRangeItem = new JMenuItem(
                                         Lang.get("tablecolumnmenu.stats.interquartile_range"));
                         interquartileRangeItem.addActionListener(
                                         e -> {
                                                 OptionalDouble iqrOpt = StatisticService
-                                                                .computeInterquartileRange(table, columnIndex);
+                                                                .computeInterquartileRange(table, tableIndex);
                                                 String iqrStr = iqrOpt.isPresent()
                                                                 ? String.format("%.4f", iqrOpt.getAsDouble())
                                                                 : "N/A";
                                                 StatisticsDialog dialog = new StatisticsDialog(
                                                                 GUIController.getInstance().getMainView(),
                                                                 Lang.get("statistics.interquartile_range.title",
-                                                                                table.getColumnName(columnIndex)),
+                                                                                table.getColumnName(tableIndex)),
                                                                 Lang.get("statistics.interquartile_range.content",
                                                                                 iqrStr));
                                                 showStatsDialog(dialog,
@@ -349,14 +365,14 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                         JMenuItem skewnessItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.skewness"));
                         skewnessItem.addActionListener(e -> {
-                                OptionalDouble skewnessOpt = StatisticService.computeSkewness(table, columnIndex);
+                                OptionalDouble skewnessOpt = StatisticService.computeSkewness(table, tableIndex);
                                 String skewnessStr = skewnessOpt.isPresent()
                                                 ? String.format("%.4f", skewnessOpt.getAsDouble())
                                                 : "N/A";
                                 StatisticsDialog dialog = new StatisticsDialog(
                                                 GUIController.getInstance().getMainView(),
                                                 Lang.get("statistics.skewness.title",
-                                                                table.getColumnName(columnIndex)),
+                                                                table.getColumnName(tableIndex)),
                                                 Lang.get("statistics.skewness.content", skewnessStr));
                                 showStatsDialog(dialog, Lang.get("statistics.skewness.content", skewnessStr));
                         });
@@ -366,14 +382,14 @@ public final class TableColumnContextMenu extends JPopupMenu {
                         coefVariationItem.addActionListener(
                                         e -> {
                                                 OptionalDouble coefVarOpt = StatisticService
-                                                                .computeCoefficientOfVariation(table, columnIndex);
+                                                                .computeCoefficientOfVariation(table, tableIndex);
                                                 String coefVarStr = coefVarOpt.isPresent()
                                                                 ? String.format("%.4f", coefVarOpt.getAsDouble())
                                                                 : "N/A";
                                                 StatisticsDialog dialog = new StatisticsDialog(
                                                                 GUIController.getInstance().getMainView(),
                                                                 Lang.get("statistics.coefficient_of_variation.title",
-                                                                                table.getColumnName(columnIndex)),
+                                                                                table.getColumnName(tableIndex)),
                                                                 Lang.get("statistics.coefficient_of_variation.content",
                                                                                 coefVarStr));
                                                 showStatsDialog(dialog,
@@ -384,10 +400,10 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                         JMenu correlationItem = new JMenu(Lang.get("tablecolumnmenu.stats.correlation"));
                         this.columnSelector(correlationItem,
-                                        i -> i != columnIndex && table.getColumnType(i).isNumeric(),
+                                        i -> i != tableIndex && table.getColumnType(i).isNumeric(),
                                         targetIndex -> {
                                                 OptionalDouble correlationOpt = StatisticService.computeCorrelation(
-                                                                table, columnIndex,
+                                                                table, tableIndex,
                                                                 targetIndex);
                                                 String correlationStr = correlationOpt.isPresent()
                                                                 ? String.format("%.4f", correlationOpt.getAsDouble())
@@ -395,7 +411,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                 StatisticsDialog dialog = new StatisticsDialog(
                                                                 GUIController.getInstance().getMainView(),
                                                                 Lang.get("statistics.correlation.title",
-                                                                                table.getColumnName(columnIndex),
+                                                                                table.getColumnName(tableIndex),
                                                                                 table.getColumnName(targetIndex)),
                                                                 Lang.get("statistics.correlation.content",
                                                                                 correlationStr));

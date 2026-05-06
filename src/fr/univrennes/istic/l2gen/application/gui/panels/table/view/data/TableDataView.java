@@ -37,7 +37,7 @@ public final class TableDataView extends JPanel {
     private final TableToolBar toolBar;
     private final TablePagination paginationBar;
 
-    private List<Integer> hiddenColumns = new ArrayList<>();
+    private List<Integer> hiddenViewIndex = new ArrayList<>();
 
     public TableDataView(TablePanel tablePanel) {
         super(new BorderLayout());
@@ -46,6 +46,7 @@ public final class TableDataView extends JPanel {
         tableView = new JTable(tableModel);
 
         tableView.setShowGrid(true);
+        tableView.setRowSelectionAllowed(false);
         tableView.setFillsViewportHeight(true);
         tableView.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         tableView.setRowSorter(null);
@@ -58,18 +59,18 @@ public final class TableDataView extends JPanel {
         tableView.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                int clickedColumnIndex = tableView.columnAtPoint(e.getPoint());
-                if (clickedColumnIndex == -1) {
+                int viewIndex = tableView.columnAtPoint(e.getPoint());
+                if (viewIndex == -1) {
                     return;
                 }
 
-                int realColumnIndex = getRealColumnIndex(clickedColumnIndex);
+                int tableIndex = getViewToTableIndex(viewIndex);
                 if (SwingUtilities.isRightMouseButton(e)) {
-                    TableColumnContextMenu contextMenu = new TableColumnContextMenu(selfView, realColumnIndex);
+                    TableColumnContextMenu contextMenu = new TableColumnContextMenu(selfView, tableIndex);
                     contextMenu.show(tableView.getTableHeader(), e.getX(), e.getY());
                 } else if (SwingUtilities.isLeftMouseButton(e)) {
-                    selectColumn(clickedColumnIndex);
-                    onColumnSelected(realColumnIndex);
+                    selectColumn(viewIndex);
+                    onColumnSelected(tableIndex);
                 }
             }
         });
@@ -86,19 +87,34 @@ public final class TableDataView extends JPanel {
         add(paginationBar, BorderLayout.SOUTH);
     }
 
-    private int getRealColumnIndex(int viewColumnIndex) {
-        int realColumnIndex = viewColumnIndex;
-        for (int hiddenColumn : hiddenColumns) {
-            if (hiddenColumn <= realColumnIndex) {
-                realColumnIndex++;
+    public int getViewToTableIndex(int viewIndex) {
+        int tableIndex = viewIndex;
+        for (int hiddenColumn : hiddenViewIndex) {
+            if (hiddenColumn <= tableIndex) {
+                tableIndex++;
             } else {
                 break;
             }
         }
-        return realColumnIndex;
+        return tableIndex;
     }
 
-    private void onColumnSelected(int columnIndex) {
+    public int getTableToViewIndex(int tableIndex) {
+        int viewIndex = tableIndex;
+        for (int hiddenColumn : hiddenViewIndex) {
+            if (hiddenColumn == tableIndex) {
+                return -1;
+            }
+            if (hiddenColumn < tableIndex) {
+                viewIndex--;
+            } else {
+                break;
+            }
+        }
+        return viewIndex;
+    }
+
+    private void onColumnSelected(int tableIndex) {
         if (!Config.get().getBoolean("settings.table.columns.calculate_statistics", true)) {
             return;
         }
@@ -111,16 +127,16 @@ public final class TableDataView extends JPanel {
                 @Override
                 protected List<Optional<String>> doInBackground() throws Exception {
                     Optional<String> min = StatisticService.computeBase(table,
-                            columnIndex,
+                            tableIndex,
                             StatisticOp.MIN);
                     Optional<String> max = StatisticService.computeBase(table,
-                            columnIndex,
+                            tableIndex,
                             StatisticOp.MAX);
                     Optional<String> avg = StatisticService.computeBase(table,
-                            columnIndex,
+                            tableIndex,
                             StatisticOp.AVG);
                     Optional<String> sum = StatisticService.computeBase(table,
-                            columnIndex,
+                            tableIndex,
                             StatisticOp.SUM);
 
                     return List.of(min, max, avg, sum);
@@ -163,51 +179,54 @@ public final class TableDataView extends JPanel {
     public void close() {
         tableModel.close();
         paginationBar.refresh();
-        hiddenColumns.clear();
+        hiddenViewIndex.clear();
         applyRowHeaderVisibility();
     }
 
     public void refresh() {
         tableModel.fireTableDataChanged();
         paginationBar.refresh();
+        toolBar.refresh();
         updateHeaderIcons();
         applyRowHeaderVisibility();
         adjustColumnWidths();
     }
 
-    public JTable getTableView() {
-        return tableView;
-    }
-
-    public TableModel getTableModel() {
-        return tableModel;
-    }
-
-    public void hideColumn(int columnIndex) {
+    public String getColumnName(int viewIndex) {
         TableColumnModel columnModel = tableView.getColumnModel();
-        if (columnIndex < 0 || columnIndex >= columnModel.getColumnCount()) {
+        if (viewIndex < 0 || viewIndex >= columnModel.getColumnCount()) {
+            return "";
+        }
+        return columnModel.getColumn(viewIndex).getHeaderValue().toString();
+    }
+
+    public void hideColumn(int viewIndex) {
+        TableColumnModel columnModel = tableView.getColumnModel();
+        if (viewIndex < 0 || viewIndex >= columnModel.getColumnCount()) {
             return;
         }
-        hiddenColumns.add(columnIndex);
-        tableView.removeColumn(columnModel.getColumn(columnIndex));
+        int tableIndex = getViewToTableIndex(viewIndex);
+        tableView.removeColumn(columnModel.getColumn(viewIndex));
+        addHiddenTableIndex(tableIndex);
         updateHeaderIcons();
     }
 
-    public void renameColumn(int columnIndex, String newName) {
+    public void renameColumn(int viewIndex, String newName) {
         TableColumnModel columnModel = tableView.getColumnModel();
-        if (columnIndex < 0 || columnIndex >= columnModel.getColumnCount()) {
+        if (viewIndex < 0 || viewIndex >= columnModel.getColumnCount()) {
             return;
         }
-        columnModel.getColumn(columnIndex).setHeaderValue(newName);
+
+        columnModel.getColumn(viewIndex).setHeaderValue(newName);
         tableView.getTableHeader().repaint();
     }
 
     public boolean hasHiddenColumns() {
-        return !hiddenColumns.isEmpty();
+        return !hiddenViewIndex.isEmpty();
     }
 
     public void showAllColumns() {
-        hiddenColumns.clear();
+        hiddenViewIndex.clear();
         TableColumnModel columnModel = tableView.getColumnModel();
         while (columnModel.getColumnCount() > 0) {
             columnModel.removeColumn(columnModel.getColumn(0));
@@ -224,37 +243,24 @@ public final class TableDataView extends JPanel {
             return;
         }
 
-        int viewIndex = 0;
-        int tableIndex = 0;
-        int viewColumnCount = tableView.getColumnCount();
-        while (tableIndex < table.getColumnCount() && viewIndex < viewColumnCount) {
-
+        for (int tableIndex = 0; tableIndex < table.getColumnCount(); tableIndex++) {
             if (table.getColumnType(tableIndex) == DataType.EMPTY) {
-                tableView.removeColumn(tableView.getColumnModel().getColumn(viewIndex));
-                hiddenColumns.add(tableIndex);
-
-                viewColumnCount--;
-                tableIndex++;
-                continue;
+                hideColumn(getTableToViewIndex(tableIndex));
             }
-
-            viewIndex++;
-            tableIndex++;
         }
         updateHeaderIcons();
     }
 
-    public void selectColumn(int columnIndex) {
+    public void selectColumn(int viewIndex) {
         TableColumnModel columnModel = tableView.getColumnModel();
-        if (columnIndex < 0 || columnIndex >= columnModel.getColumnCount()) {
+        if (viewIndex < 0 || viewIndex >= columnModel.getColumnCount()) {
             return;
         }
         tableView.setColumnSelectionAllowed(true);
-        tableView.setRowSelectionAllowed(false);
         tableView.clearSelection();
-        tableView.setColumnSelectionInterval(columnIndex, columnIndex);
+        tableView.setColumnSelectionInterval(viewIndex, viewIndex);
         tableView.selectAll();
-        tableView.setColumnSelectionInterval(columnIndex, columnIndex);
+        tableView.setColumnSelectionInterval(viewIndex, viewIndex);
     }
 
     private void applyRowHeaderVisibility() {
@@ -275,15 +281,31 @@ public final class TableDataView extends JPanel {
         }
 
         Icon filterIcon = Ico.get("icons/filter_on.svg");
-        for (int columnIndex = 0; columnIndex < table.getColumnCount(); columnIndex++) {
-            boolean hasFilter = table.getColumnFilters(columnIndex).size() > 0;
+        for (int tableIndex = 0; tableIndex < table.getColumnCount(); tableIndex++) {
+            int viewIndex = getTableToViewIndex(tableIndex);
+            if (viewIndex == -1) {
+                continue;
+            }
+            boolean hasFilter = table.getColumnFilters(tableIndex).size() > 0;
+
             if (hasFilter) {
-                headerRenderer.setIcon(columnIndex, filterIcon);
+                headerRenderer.setIcon(viewIndex, filterIcon);
             } else {
-                headerRenderer.clearIcon(columnIndex);
+                headerRenderer.clearIcon(viewIndex);
             }
         }
         tableView.getTableHeader().repaint();
+    }
+
+    private void addHiddenTableIndex(int tableIndex) {
+        int insertIndex = 0;
+        while (insertIndex < hiddenViewIndex.size() && hiddenViewIndex.get(insertIndex) < tableIndex) {
+            insertIndex++;
+        }
+        if (insertIndex < hiddenViewIndex.size() && hiddenViewIndex.get(insertIndex) == tableIndex) {
+            return;
+        }
+        hiddenViewIndex.add(insertIndex, tableIndex);
     }
 
     private void adjustColumnWidths() {
@@ -292,23 +314,40 @@ public final class TableDataView extends JPanel {
         }
 
         int sampleRowCount = Math.min(tableView.getRowCount(), 50);
-        for (int columnIndex = 0; columnIndex < tableView.getColumnCount(); columnIndex++) {
+        for (int viewIndex = 0; viewIndex < tableView.getColumnCount(); viewIndex++) {
             int maxWidth = 0;
-            TableColumn tableColumn = tableView.getColumnModel().getColumn(columnIndex);
+            TableColumn tableColumn = tableView.getColumnModel().getColumn(viewIndex);
 
             TableCellRenderer headerRenderer = tableView.getTableHeader().getDefaultRenderer();
             Component headerComponent = headerRenderer.getTableCellRendererComponent(
-                    tableView, tableColumn.getHeaderValue(), false, false, -1, columnIndex);
+                    tableView, tableColumn.getHeaderValue(), false, false, -1, viewIndex);
             maxWidth = Math.max(maxWidth, headerComponent.getPreferredSize().width);
 
             for (int rowIndex = 0; rowIndex < sampleRowCount; rowIndex++) {
-                TableCellRenderer cellRenderer = tableView.getCellRenderer(rowIndex, columnIndex);
+                TableCellRenderer cellRenderer = tableView.getCellRenderer(rowIndex, viewIndex);
                 Component cellComponent = cellRenderer.getTableCellRendererComponent(
-                        tableView, tableView.getValueAt(rowIndex, columnIndex), false, false, rowIndex, columnIndex);
+                        tableView, tableView.getValueAt(rowIndex, viewIndex), false, false, rowIndex, viewIndex);
                 maxWidth = Math.max(maxWidth, cellComponent.getPreferredSize().width);
             }
 
             tableColumn.setPreferredWidth(maxWidth + 16);
         }
     }
+
+    public TableToolBar getToolBar() {
+        return toolBar;
+    }
+
+    public TablePagination getPaginationBar() {
+        return paginationBar;
+    }
+
+    public JTable getTableView() {
+        return tableView;
+    }
+
+    public TableModel getTableModel() {
+        return tableModel;
+    }
+
 }

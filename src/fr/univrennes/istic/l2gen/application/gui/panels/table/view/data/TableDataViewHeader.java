@@ -17,24 +17,24 @@ public final class TableDataViewHeader implements TableCellRenderer {
         this.defaultRenderer = defaultRenderer;
     }
 
-    public void setIcon(int columnIndex, Icon icon) {
-        columnIcons.put(columnIndex, icon);
+    public void setIcon(int viewIndex, Icon icon) {
+        columnIcons.put(viewIndex, icon);
     }
 
-    public void clearIcon(int columnIndex) {
-        columnIcons.remove(columnIndex);
+    public void clearIcon(int viewIndex) {
+        columnIcons.remove(viewIndex);
     }
 
     @Override
     public Component getTableCellRendererComponent(
             JTable table, Object value, boolean isSelected,
-            boolean hasFocus, int row, int columnIndex) {
+            boolean hasFocus, int row, int viewIndex) {
 
         Component component = defaultRenderer.getTableCellRendererComponent(
-                table, value, isSelected, hasFocus, row, columnIndex);
+                table, value, isSelected, hasFocus, row, viewIndex);
 
         if (component instanceof JLabel label) {
-            label.setIcon(columnIcons.getOrDefault(columnIndex, null));
+            label.setIcon(columnIcons.getOrDefault(viewIndex, null));
             label.setHorizontalTextPosition(JLabel.LEFT);
         }
 
