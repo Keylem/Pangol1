@@ -238,7 +238,7 @@ public final class TableListView extends JPanel {
 
         GUIController.getInstance().getTable().ifPresent(currentTable -> {
             if (path.equals(currentTable.getPath())) {
-                GUIController.getInstance().onCloseTable();
+                GUIController.getInstance().closeTable();
             }
         });
 

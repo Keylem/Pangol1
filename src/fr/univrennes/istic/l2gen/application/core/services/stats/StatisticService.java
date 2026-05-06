@@ -29,7 +29,6 @@ public final class StatisticService {
         String taskId = Pangol1.getController().addTask(
                 Lang.get("task.stats.base", action.getDisplayName(), table.getColumnName(columnIndex)),
                 TaskStatus.PENDING);
-
         switch (table.getColumnType(columnIndex)) {
             case DOUBLE, INTEGER, BOOLEAN -> {
                 query = String.format(

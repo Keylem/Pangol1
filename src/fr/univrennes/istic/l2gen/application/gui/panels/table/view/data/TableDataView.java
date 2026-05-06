@@ -187,6 +187,7 @@ public final class TableDataView extends JPanel {
         tableModel.fireTableDataChanged();
         paginationBar.refresh();
         toolBar.refresh();
+
         updateHeaderIcons();
         applyRowHeaderVisibility();
         adjustColumnWidths();

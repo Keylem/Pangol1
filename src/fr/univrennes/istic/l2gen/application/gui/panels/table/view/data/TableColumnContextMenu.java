@@ -37,6 +37,9 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 this.tableIndex = tableIndex;
                 this.columnType = table.getColumnType(tableIndex);
 
+                System.out.println(table.getColumnName(tableIndex) + " of type "
+                                + columnType);
+
                 add(buildSortMenu());
                 addSeparator();
                 add(buildFilterMenu());

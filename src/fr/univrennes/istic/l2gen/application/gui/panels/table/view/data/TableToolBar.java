@@ -17,6 +17,9 @@ public final class TableToolBar extends JToolBar {
 
         private JButton advancedFilterButton;
         private JButton clearFiltersButton;
+
+        private JButton subtableButton;
+
         private JButton showAllColumnsButton;
         private JButton hideEmptyColumnsButton;
 
@@ -46,6 +49,10 @@ public final class TableToolBar extends JToolBar {
                 });
                 clearFiltersButton.setVisible(
                                 tableView.getTableModel().getTable().map(t -> !t.getFilters().isEmpty()).orElse(false));
+
+                subtableButton = new JButton(Lang.get("tabletoolbar.subtable"),
+                                Ico.get("icons/subtable.svg"));
+                subtableButton.addActionListener(e -> GUIController.getInstance().onOpenSubtableDialog());
 
                 showAllColumnsButton = new JButton(Lang.get("tabletoolbar.show_all_columns"),
                                 Ico.get("icons/show.svg"));
@@ -80,11 +87,13 @@ public final class TableToolBar extends JToolBar {
                                         return;
                                 }
                         }
-                        GUIController.getInstance().onCloseTable();
+                        GUIController.getInstance().closeTable();
                 });
 
                 add(advancedFilterButton);
                 add(clearFiltersButton);
+                addSeparator();
+                add(subtableButton);
                 addSeparator();
                 add(showAllColumnsButton);
                 add(hideEmptyColumnsButton);

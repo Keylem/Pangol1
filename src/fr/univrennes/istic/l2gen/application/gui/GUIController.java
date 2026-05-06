@@ -25,6 +25,7 @@ import fr.univrennes.istic.l2gen.application.core.table.DataTable;
 import fr.univrennes.istic.l2gen.application.core.table.DataTableWorkerStatus;
 import fr.univrennes.istic.l2gen.application.core.filter.Filter;
 import fr.univrennes.istic.l2gen.application.gui.dialog.filter.FilterDialog;
+import fr.univrennes.istic.l2gen.application.gui.dialog.subtable.SubtableDialog;
 import fr.univrennes.istic.l2gen.application.gui.main.MainView;
 
 public final class GUIController extends CoreController {
@@ -231,7 +232,9 @@ public final class GUIController extends CoreController {
             }
         }
 
+        closeTable();
         currentTable = table;
+
         mainView.getTablePanel().open(table);
         mainView.getTablePanel().refresh();
         mainView.getReportPanel().refresh();
@@ -248,7 +251,7 @@ public final class GUIController extends CoreController {
 
     }
 
-    public void onCloseTable() {
+    public void closeTable() {
         if (currentTable != null) {
             setStatus(Lang.get("status.closing_table",
                     currentTable != null ? currentTable.getAlias() : Lang.get("error.number_na")));
@@ -273,6 +276,17 @@ public final class GUIController extends CoreController {
         currentTable.addFilters(filters);
 
         mainView.getTablePanel().refresh();
+    }
+
+    public void onOpenSubtableDialog() {
+        if (currentTable == null) {
+            return;
+        }
+
+        DataTable subtable = SubtableDialog.show(mainView, currentTable);
+        if (subtable != null) {
+            setTable(subtable);
+        }
     }
 
     public void onOpenFileDialog() {

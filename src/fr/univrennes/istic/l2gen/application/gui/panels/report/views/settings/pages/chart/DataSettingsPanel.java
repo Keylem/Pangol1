@@ -54,11 +54,7 @@ public final class DataSettingsPanel extends SettingSectionPanel {
         tables = new JComboBox<>(tablesPath.toArray(new String[0]));
         tables.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                File selectedTable = new File((String) tables.getSelectedItem());
-                DataTable table = TableService.get(selectedTable);
-                if (table != null) {
-                    updateColumnComboBoxes();
-                }
+                updateColumnComboBoxes();
             }
         });
         addRow(new SettingRowPanel(Lang.get("report.setting.data.table"), tables));
@@ -73,6 +69,15 @@ public final class DataSettingsPanel extends SettingSectionPanel {
 
         addRow(new SettingSeparatorRow(Lang.get("report.setting.data.columns")));
 
+        valueColumn = new JComboBox<>(new String[0]);
+        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_value"), valueColumn));
+
+        groupColumn = new JComboBox<>(new String[0]);
+        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_group"), groupColumn));
+
+        biggerGroupColumn = new JComboBox<>(new String[0]);
+        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_bigger_group"), biggerGroupColumn));
+
         updateColumnComboBoxes();
     }
 
@@ -86,8 +91,7 @@ public final class DataSettingsPanel extends SettingSectionPanel {
                         return false;
                     }
                 }, true);
-        valueColumn = new JComboBox<>(valueCols);
-        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_value"), valueColumn));
+        valueColumn.setModel(new JComboBox<>(valueCols).getModel());
 
         String[] groupCols = getColumnNames((table, i) -> {
             if (table.getColumnType(i).isCategorical()) {
@@ -97,16 +101,15 @@ public final class DataSettingsPanel extends SettingSectionPanel {
                 return false;
             }
         }, false);
-        groupColumn = new JComboBox<>(groupCols);
-        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_group"), groupColumn));
+        groupColumn.setModel(new JComboBox<>(groupCols).getModel());
+        groupColumn.setEnabled(groupCols.length != 0);
 
         String[] allCols = getColumnNames((table, i) -> true, true);
         String[] colsWithNone = new String[allCols.length + 1];
         colsWithNone[0] = Lang.get("report.setting.data.col_none");
         System.arraycopy(allCols, 0, colsWithNone, 1, allCols.length);
 
-        biggerGroupColumn = new JComboBox<>(colsWithNone);
-        addRow(new SettingRowPanel(Lang.get("report.setting.data.col_bigger_group"), biggerGroupColumn));
+        biggerGroupColumn.setModel(new JComboBox<>(colsWithNone).getModel());
     }
 
     private static interface ColumnFilter {
