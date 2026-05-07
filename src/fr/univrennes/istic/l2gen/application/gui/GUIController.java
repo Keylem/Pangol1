@@ -58,6 +58,7 @@ public final class GUIController extends CoreController {
             }
         }
         ///
+
         Config.putBooleanIfAbsent("settings.startup.show_welcome", true);
         Config.putBooleanIfAbsent("settings.startup.check_update", true);
         Config.putBooleanIfAbsent("settings.startup.reopen_tables", false);

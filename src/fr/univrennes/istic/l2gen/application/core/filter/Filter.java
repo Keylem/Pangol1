@@ -27,6 +27,12 @@ public final class Filter implements Serializable {
         return filter;
     }
 
+    public static Filter equals(int columnIndex, String value) {
+        Filter filter = new Filter(columnIndex);
+        filter.add(new FilterCondition(FilterOperator.EQUAL, value));
+        return filter;
+    }
+
     public static Filter search(int columnIndex, String value) {
         Filter filter = new Filter(columnIndex);
         filter.add(new FilterCondition(FilterOperator.LIKE, value));

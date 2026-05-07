@@ -1,6 +1,7 @@
 package fr.univrennes.istic.l2gen.application.gui.panels.table.view.data;
 
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.OptionalDouble;
 import java.util.function.Function;
 
@@ -8,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingWorker;
 
 import fr.univrennes.istic.l2gen.application.core.TaskStatus;
 import fr.univrennes.istic.l2gen.application.core.config.Config;
@@ -22,9 +24,12 @@ import fr.univrennes.istic.l2gen.application.gui.GUIController;
 import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputDateDialog;
 import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputDoubleDialog;
 import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputIntDialog;
+import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputSelectDialog;
+import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputStringDialog;
 import fr.univrennes.istic.l2gen.application.gui.dialog.stats.StatisticsDialog;
 
 public final class TableColumnContextMenu extends JPopupMenu {
+        private static final int MAX_CATEGORIES = 25;
 
         private final DataTable table;
         private final int tableIndex;
@@ -36,9 +41,6 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 this.tableView = tableView;
                 this.tableIndex = tableIndex;
                 this.columnType = table.getColumnType(tableIndex);
-
-                System.out.println(table.getColumnName(tableIndex) + " of type "
-                                + columnType);
 
                 add(buildSortMenu());
                 addSeparator();
@@ -291,7 +293,84 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 filterMenu.add(filterEmptyItem);
                 filterMenu.add(filterNonEmptyItem);
                 filterMenu.addSeparator();
-                filterMenu.add(clearFilterItem);
+
+                if (columnType.isCategorical()) {
+                        new SwingWorker<>() {
+                                private List<String> categories;
+                                private boolean hasCategories;
+
+                                @Override
+                                protected Void doInBackground() throws Exception {
+                                        hasCategories = StatisticService.hasColumnCategories(table, tableIndex);
+                                        categories = StatisticService.getColumnCategories(table, tableIndex);
+                                        return null;
+                                }
+
+                                @Override
+                                protected void done() {
+                                        if (hasCategories) {
+                                                if (categories.size() > MAX_CATEGORIES) {
+                                                        JMenuItem filterByCategory = new JMenuItem(
+                                                                        Lang.get("tablecolumnmenu.filter.by_category"));
+                                                        filterByCategory.addActionListener(e -> {
+                                                                String category = InputSelectDialog.show(
+                                                                                categories,
+                                                                                Lang.get("tablecolumnmenu.filter.category"),
+                                                                                Lang.get("tablecolumnmenu.filter.by_category"),
+                                                                                Lang.get("tablecolumnmenu.filter.category.error"))
+                                                                                .orElse(null);
+                                                                if (category != null && !category.isBlank()) {
+                                                                        table.addFilter(Filter.equals(tableIndex,
+                                                                                        category));
+                                                                        tableView.refresh();
+                                                                }
+                                                        });
+                                                        filterMenu.add(filterByCategory);
+                                                } else {
+                                                        JMenu filterByCategoryMenu = new JMenu(
+                                                                        Lang.get("tablecolumnmenu.filter.by_category"));
+                                                        for (String category : categories) {
+                                                                JMenuItem categoryItem = new JMenuItem(category);
+                                                                categoryItem.addActionListener(e -> {
+                                                                        table.addFilter(Filter.equals(tableIndex,
+                                                                                        category));
+                                                                        tableView.refresh();
+                                                                });
+                                                                filterByCategoryMenu.add(categoryItem);
+                                                        }
+                                                        filterMenu.add(filterByCategoryMenu);
+                                                }
+                                        } else {
+                                                JMenuItem filterByValueItem = new JMenuItem(
+                                                                Lang.get("tablecolumnmenu.filter.by_value"));
+                                                filterByValueItem.addActionListener(e -> {
+                                                        String value = InputStringDialog.show(
+                                                                        Lang.get("tablecolumnmenu.filter.value"),
+                                                                        Lang.get("tablecolumnmenu.filter.by_value"),
+                                                                        Lang.get("tablecolumnmenu.filter.value.error"))
+                                                                        .orElse(null);
+                                                        if (value != null && !value.isBlank()) {
+                                                                table.addFilter(Filter.search(tableIndex, value));
+                                                                tableView.refresh();
+                                                        }
+                                                });
+                                                filterMenu.add(filterByValueItem);
+                                        }
+
+                                        filterMenu.addSeparator();
+                                        filterMenu.add(clearFilterItem);
+
+                                        filterMenu.revalidate();
+                                        filterMenu.repaint();
+
+                                        TableColumnContextMenu.this.revalidate();
+                                        TableColumnContextMenu.this.repaint();
+                                }
+                        }.execute();
+                } else {
+                        filterMenu.addSeparator();
+                        filterMenu.add(clearFilterItem);
+                }
                 return filterMenu;
         }
 
