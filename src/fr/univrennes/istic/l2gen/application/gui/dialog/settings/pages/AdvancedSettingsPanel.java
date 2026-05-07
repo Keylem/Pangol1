@@ -17,10 +17,10 @@ public final class AdvancedSettingsPanel extends AbstractSettingsPanel {
         public AdvancedSettingsPanel() {
 
                 enableDebugLogCheckBox = new JCheckBox();
-                enableDebugLogCheckBox.setSelected(Config.get().getBoolean("settings.advanced.debug_log", false));
+                enableDebugLogCheckBox.setSelected(Config.getBoolean("settings.advanced.debug_log", false));
 
                 enableDevModeCheckBox = new JCheckBox();
-                enableDevModeCheckBox.setSelected(Config.get().getBoolean("settings.advanced.dev_mode", false));
+                enableDevModeCheckBox.setSelected(Config.getBoolean("settings.advanced.dev_mode", false));
 
                 SettingsSectionPanel logSection = new SettingsSectionPanel(Lang.get("settings.advanced.section.log"));
                 logSection.addRow(new SettingsRowPanel(Lang.get("settings.advanced.debug_log"),
@@ -37,17 +37,17 @@ public final class AdvancedSettingsPanel extends AbstractSettingsPanel {
         @Override
         public boolean applySettings() {
                 boolean changed = false;
-                if (Config.get().getBoolean("settings.advanced.debug_log", false) != enableDebugLogCheckBox
+                if (Config.getBoolean("settings.advanced.debug_log", false) != enableDebugLogCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.advanced.dev_mode", false) != enableDevModeCheckBox
+                if (Config.getBoolean("settings.advanced.dev_mode", false) != enableDevModeCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
 
-                Config.get().putBoolean("settings.advanced.debug_log", enableDebugLogCheckBox.isSelected());
-                Config.get().putBoolean("settings.advanced.dev_mode", enableDevModeCheckBox.isSelected());
+                Config.putBoolean("settings.advanced.debug_log", enableDebugLogCheckBox.isSelected());
+                Config.putBoolean("settings.advanced.dev_mode", enableDevModeCheckBox.isSelected());
 
                 return changed;
         }

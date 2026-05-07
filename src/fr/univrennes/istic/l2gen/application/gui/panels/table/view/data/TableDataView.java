@@ -115,7 +115,7 @@ public final class TableDataView extends JPanel {
     }
 
     private void onColumnSelected(int tableIndex) {
-        if (!Config.get().getBoolean("settings.table.columns.calculate_statistics", true)) {
+        if (!Config.getBoolean("settings.table.columns.calculate_statistics", true)) {
             return;
         }
         GUIController.getInstance().getTable().ifPresent(table -> {
@@ -171,7 +171,7 @@ public final class TableDataView extends JPanel {
         applyRowHeaderVisibility();
         adjustColumnWidths();
 
-        if (Config.get().getBoolean("settings.table.columns.hide_empty", false)) {
+        if (Config.getBoolean("settings.table.columns.hide_empty", false)) {
             hideEmptyColumns();
         }
     }
@@ -265,7 +265,7 @@ public final class TableDataView extends JPanel {
     }
 
     private void applyRowHeaderVisibility() {
-        boolean showRowNumbers = Config.get().getBoolean("settings.table.show_row_numbers", false);
+        boolean showRowNumbers = Config.getBoolean("settings.table.show_row_numbers", false);
         if (showRowNumbers && tableModel.getTable().isPresent()) {
             rowHeader.refresh();
             tableScrollPane.setRowHeaderView(rowHeader.getComponent());
@@ -310,7 +310,7 @@ public final class TableDataView extends JPanel {
     }
 
     private void adjustColumnWidths() {
-        if (!Config.get().getBoolean("settings.table.columns.auto_resize", true)) {
+        if (!Config.getBoolean("settings.table.columns.auto_resize", true)) {
             return;
         }
 

@@ -142,7 +142,7 @@ public final class TableModel extends AbstractTableModel {
         if (table == null) {
             return "";
         }
-        if (Config.get().getBoolean("settings.table.columns.show_types", false)) {
+        if (Config.getBoolean("settings.table.columns.show_types", false)) {
             DataType type = table.getColumnType(columnIndex);
             return String.format(table.getColumnName(columnIndex) + " (%s)",
                     Lang.get("table.type." + type.name().toLowerCase()));
@@ -157,7 +157,7 @@ public final class TableModel extends AbstractTableModel {
         }
 
         Object value = table.getValueAt(getPageStartRow() + rowIndex, columnIndex);
-        if (value == null && Config.get().getBoolean("settings.table.show_null_values", false)) {
+        if (value == null && Config.getBoolean("settings.table.show_null_values", false)) {
             return "(null)";
         }
         return value;
@@ -165,7 +165,7 @@ public final class TableModel extends AbstractTableModel {
 
     @Override
     public boolean isCellEditable(int row, int col) {
-        return !Config.get().getBoolean("settings.table.read_only", false);
+        return !Config.getBoolean("settings.table.read_only", false);
     }
 
     @Override
@@ -174,7 +174,7 @@ public final class TableModel extends AbstractTableModel {
             return;
         }
 
-        if (Config.get().getBoolean("settings.table.read_only", false)) {
+        if (Config.getBoolean("settings.table.read_only", false)) {
             return;
         }
 

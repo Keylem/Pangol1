@@ -24,7 +24,7 @@ public class TableServiceTest {
     public void resetState() throws Exception {
         clearLoadedTables();
         TableService.getRecentTables().clear();
-        Config.get().remove("settings.startup.recent_tables");
+        Config.remove("settings.startup.recent_tables");
         startServer();
     }
 
@@ -35,7 +35,7 @@ public class TableServiceTest {
         }
         clearLoadedTables();
         TableService.getRecentTables().clear();
-        Config.get().remove("settings.startup.recent_tables");
+        Config.remove("settings.startup.recent_tables");
         for (File path : tempPaths) {
             deleteRecursively(path);
         }

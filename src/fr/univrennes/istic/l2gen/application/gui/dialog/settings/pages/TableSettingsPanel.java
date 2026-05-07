@@ -29,29 +29,29 @@ public final class TableSettingsPanel extends AbstractSettingsPanel {
                                 Lang.get("settings.table.section.mode"));
 
                 readOnlyCheckBox = new JCheckBox();
-                readOnlyCheckBox.setSelected(Config.get().getBoolean("settings.table.read_only", true));
+                readOnlyCheckBox.setSelected(Config.getBoolean("settings.table.read_only", true));
                 modeSection.addRow(new SettingsRowPanel(Lang.get("settings.table.read_only"), readOnlyCheckBox));
 
                 manualTypingCheckBox = new JCheckBox();
-                manualTypingCheckBox.setSelected(Config.get().getBoolean("settings.table.manual_typing", true));
+                manualTypingCheckBox.setSelected(Config.getBoolean("settings.table.manual_typing", true));
                 modeSection.addRow(
                                 new SettingsRowPanel(Lang.get("settings.table.manual_typing"), manualTypingCheckBox));
 
                 castSensitivity = new JSpinner(new SpinnerNumberModel(0.95, 0.5, 1.0, 0.01));
-                castSensitivity.setValue((double) Config.get().getFloat("settings.table.cast_sensitivity", 0.95f));
+                castSensitivity.setValue((double) Config.getFloat("settings.table.cast_sensitivity", 0.95f));
                 modeSection.addRow(new SettingsRowPanel(Lang.get("settings.table.cast_sensitivity"), castSensitivity));
 
                 SettingsSectionPanel displaySection = new SettingsSectionPanel(
                                 Lang.get("settings.table.section.display"));
 
                 showRowNumbersCheckBox = new JCheckBox();
-                showRowNumbersCheckBox.setSelected(Config.get().getBoolean("settings.table.show_row_numbers", false));
+                showRowNumbersCheckBox.setSelected(Config.getBoolean("settings.table.show_row_numbers", false));
                 displaySection
                                 .addRow(new SettingsRowPanel(Lang.get("settings.table.show_row_numbers"),
                                                 showRowNumbersCheckBox));
 
                 showNullValuesCheckBox = new JCheckBox();
-                showNullValuesCheckBox.setSelected(Config.get().getBoolean("settings.table.show_null_values", false));
+                showNullValuesCheckBox.setSelected(Config.getBoolean("settings.table.show_null_values", false));
                 displaySection
                                 .addRow(new SettingsRowPanel(Lang.get("settings.table.show_null_values"),
                                                 showNullValuesCheckBox));
@@ -61,21 +61,21 @@ public final class TableSettingsPanel extends AbstractSettingsPanel {
 
                 hideEmptyColumnsCheckBox = new JCheckBox();
                 hideEmptyColumnsCheckBox.setSelected(
-                                Config.get().getBoolean("settings.table.columns.hide_empty", false));
+                                Config.getBoolean("settings.table.columns.hide_empty", false));
                 columnsSection
                                 .addRow(new SettingsRowPanel(Lang.get("settings.table.columns.hide_empty"),
                                                 hideEmptyColumnsCheckBox));
 
                 showColumnTypesCheckBox = new JCheckBox();
                 showColumnTypesCheckBox.setSelected(
-                                Config.get().getBoolean("settings.table.columns.show_types", false));
+                                Config.getBoolean("settings.table.columns.show_types", false));
                 columnsSection
                                 .addRow(new SettingsRowPanel(Lang.get("settings.table.columns.show_types"),
                                                 showColumnTypesCheckBox));
 
                 autoResizeColumnsCheckBox = new JCheckBox();
                 autoResizeColumnsCheckBox.setSelected(
-                                Config.get().getBoolean("settings.table.columns.auto_resize", true));
+                                Config.getBoolean("settings.table.columns.auto_resize", true));
                 columnsSection.addRow(
                                 new SettingsRowPanel(Lang.get("settings.table.columns.auto_resize"),
                                                 autoResizeColumnsCheckBox));
@@ -85,7 +85,7 @@ public final class TableSettingsPanel extends AbstractSettingsPanel {
 
                 calculateStatisticsCheckBox = new JCheckBox();
                 calculateStatisticsCheckBox.setSelected(
-                                Config.get().getBoolean("settings.table.columns.calculate_statistics", true));
+                                Config.getBoolean("settings.table.columns.calculate_statistics", true));
                 statsSection.addRow(new SettingsRowPanel(
                                 Lang.get("settings.table.columns.calculate_statistics"),
                                 calculateStatisticsCheckBox));
@@ -99,52 +99,52 @@ public final class TableSettingsPanel extends AbstractSettingsPanel {
         @Override
         public boolean applySettings() {
                 boolean changed = false;
-                if (Config.get().getBoolean("settings.table.read_only", true) != readOnlyCheckBox.isSelected()) {
+                if (Config.getBoolean("settings.table.read_only", true) != readOnlyCheckBox.isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.manual_typing", true) != manualTypingCheckBox
+                if (Config.getBoolean("settings.table.manual_typing", true) != manualTypingCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getFloat("settings.table.cast_sensitivity",
+                if (Config.getFloat("settings.table.cast_sensitivity",
                                 0.95f) != ((Double) castSensitivity.getValue()).floatValue()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.show_row_numbers", false) != showRowNumbersCheckBox
+                if (Config.getBoolean("settings.table.show_row_numbers", false) != showRowNumbersCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.show_null_values", false) != showNullValuesCheckBox
+                if (Config.getBoolean("settings.table.show_null_values", false) != showNullValuesCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.columns.hide_empty", false) != hideEmptyColumnsCheckBox
+                if (Config.getBoolean("settings.table.columns.hide_empty", false) != hideEmptyColumnsCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.columns.show_types", false) != showColumnTypesCheckBox
+                if (Config.getBoolean("settings.table.columns.show_types", false) != showColumnTypesCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.columns.auto_resize", true) != autoResizeColumnsCheckBox
+                if (Config.getBoolean("settings.table.columns.auto_resize", true) != autoResizeColumnsCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.table.columns.calculate_statistics",
+                if (Config.getBoolean("settings.table.columns.calculate_statistics",
                                 true) != calculateStatisticsCheckBox.isSelected()) {
                         changed = true;
                 }
 
-                Config.get().putBoolean("settings.table.read_only", readOnlyCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.manual_typing", manualTypingCheckBox.isSelected());
-                Config.get().putFloat("settings.table.cast_sensitivity",
+                Config.putBoolean("settings.table.read_only", readOnlyCheckBox.isSelected());
+                Config.putBoolean("settings.table.manual_typing", manualTypingCheckBox.isSelected());
+                Config.putFloat("settings.table.cast_sensitivity",
                                 ((Double) castSensitivity.getValue()).floatValue());
-                Config.get().putBoolean("settings.table.show_row_numbers", showRowNumbersCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.show_null_values", showNullValuesCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.columns.hide_empty", hideEmptyColumnsCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.columns.show_types", showColumnTypesCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.columns.auto_resize", autoResizeColumnsCheckBox.isSelected());
-                Config.get().putBoolean("settings.table.columns.calculate_statistics",
+                Config.putBoolean("settings.table.show_row_numbers", showRowNumbersCheckBox.isSelected());
+                Config.putBoolean("settings.table.show_null_values", showNullValuesCheckBox.isSelected());
+                Config.putBoolean("settings.table.columns.hide_empty", hideEmptyColumnsCheckBox.isSelected());
+                Config.putBoolean("settings.table.columns.show_types", showColumnTypesCheckBox.isSelected());
+                Config.putBoolean("settings.table.columns.auto_resize", autoResizeColumnsCheckBox.isSelected());
+                Config.putBoolean("settings.table.columns.calculate_statistics",
                                 calculateStatisticsCheckBox.isSelected());
 
                 return changed;

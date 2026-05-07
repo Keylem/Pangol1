@@ -30,7 +30,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                                 Lang.get("settings.appearance.theme.system"),
                                 Lang.get("settings.appearance.theme.auto")
                 });
-                themeComboBox.setSelectedIndex(Config.get().getInt("settings.appearance.theme", 3));
+                themeComboBox.setSelectedIndex(Config.getInt("settings.appearance.theme", 3));
 
                 themeStartHourSlider = new JSlider(0, 24, 18);
                 themeStartHourSlider.setMajorTickSpacing(2);
@@ -39,7 +39,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 themeStartHourSlider.setPaintTicks(true);
                 themeStartHourSlider.setPaintLabels(true);
                 themeStartHourSlider.setSnapToTicks(true);
-                themeStartHourSlider.setValue(Config.get().getInt("settings.appearance.auto_start", 18));
+                themeStartHourSlider.setValue(Config.getInt("settings.appearance.auto_start", 18));
 
                 themeEndHourSlider = new JSlider(0, 24, 6);
                 themeEndHourSlider.setMajorTickSpacing(2);
@@ -48,7 +48,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 themeEndHourSlider.setPaintTicks(true);
                 themeEndHourSlider.setPaintLabels(true);
                 themeEndHourSlider.setSnapToTicks(true);
-                themeEndHourSlider.setValue(Config.get().getInt("settings.appearance.auto_end", 6));
+                themeEndHourSlider.setValue(Config.getInt("settings.appearance.auto_end", 6));
 
                 themeComboBox.addActionListener(e -> {
                         String selected = (String) themeComboBox.getSelectedItem();
@@ -58,7 +58,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 });
 
                 useFlatLafCheckBox = new JCheckBox();
-                useFlatLafCheckBox.setSelected(Config.get().getBoolean("settings.appearance.use_flatlaf", true));
+                useFlatLafCheckBox.setSelected(Config.getBoolean("settings.appearance.use_flatlaf", true));
                 useFlatLafCheckBox.addActionListener(e -> {
                         boolean selected = useFlatLafCheckBox.isSelected();
                         themeComboBox.setEnabled(selected);
@@ -80,7 +80,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 fontSizeSlider.setPaintTicks(true);
                 fontSizeSlider.setPaintLabels(true);
                 fontSizeSlider.setSnapToTicks(true);
-                fontSizeSlider.setValue(Config.get().getInt("settings.appearance.font_size", 12));
+                fontSizeSlider.setValue(Config.getInt("settings.appearance.font_size", 12));
 
                 List<String> fontFamilies = new ArrayList<>();
                 fontFamilies.add(Lang.get("settings.appearance.ui.default_font"));
@@ -88,7 +88,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                         fontFamilies.add(font);
                 }
                 fontFamilyComboBox = new JComboBox<>(fontFamilies.toArray(new String[0]));
-                fontFamilyComboBox.setSelectedItem(Config.get().get("settings.appearance.font_family",
+                fontFamilyComboBox.setSelectedItem(Config.get("settings.appearance.font_family",
                                 Lang.get("settings.appearance.ui.default_font")));
 
                 SettingsSectionPanel themeSection = new SettingsSectionPanel(
@@ -112,36 +112,36 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
         @Override
         public boolean applySettings() {
                 boolean changed = false;
-                if (Config.get().getBoolean("settings.appearance.use_flatlaf", true) != useFlatLafCheckBox
+                if (Config.getBoolean("settings.appearance.use_flatlaf", true) != useFlatLafCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getInt("settings.appearance.theme", 3) != themeComboBox.getSelectedIndex()) {
+                if (Config.getInt("settings.appearance.theme", 3) != themeComboBox.getSelectedIndex()) {
                         changed = true;
                 }
-                if (Config.get().getInt("settings.appearance.auto_start", 18) != themeStartHourSlider.getValue()) {
+                if (Config.getInt("settings.appearance.auto_start", 18) != themeStartHourSlider.getValue()) {
                         changed = true;
                 }
-                if (Config.get().getInt("settings.appearance.auto_end", 6) != themeEndHourSlider.getValue()) {
+                if (Config.getInt("settings.appearance.auto_end", 6) != themeEndHourSlider.getValue()) {
                         changed = true;
                 }
-                if (Config.get().getInt("settings.appearance.font_size", 12) != fontSizeSlider.getValue()) {
+                if (Config.getInt("settings.appearance.font_size", 12) != fontSizeSlider.getValue()) {
                         changed = true;
                 }
-                if (!Config.get().get("settings.appearance.font_family",
+                if (!Config.get("settings.appearance.font_family",
                                 Lang.get("settings.appearance.ui.default_font"))
                                 .equals(fontFamilyComboBox.getSelectedItem())) {
                         changed = true;
                 }
 
-                Config.get().putInt("settings.appearance.theme", themeComboBox.getSelectedIndex());
-                Config.get().putInt("settings.appearance.auto_start", themeStartHourSlider.getValue());
-                Config.get().putInt("settings.appearance.auto_end", themeEndHourSlider.getValue());
+                Config.putInt("settings.appearance.theme", themeComboBox.getSelectedIndex());
+                Config.putInt("settings.appearance.auto_start", themeStartHourSlider.getValue());
+                Config.putInt("settings.appearance.auto_end", themeEndHourSlider.getValue());
 
-                Config.get().putBoolean("settings.appearance.use_flatlaf", useFlatLafCheckBox.isSelected());
+                Config.putBoolean("settings.appearance.use_flatlaf", useFlatLafCheckBox.isSelected());
 
-                Config.get().putInt("settings.appearance.font_size", fontSizeSlider.getValue());
-                Config.get().put("settings.appearance.font_family", (String) fontFamilyComboBox.getSelectedItem());
+                Config.putInt("settings.appearance.font_size", fontSizeSlider.getValue());
+                Config.put("settings.appearance.font_family", (String) fontFamilyComboBox.getSelectedItem());
 
                 return changed;
         }

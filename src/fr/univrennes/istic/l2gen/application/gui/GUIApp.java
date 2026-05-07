@@ -31,7 +31,7 @@ public final class GUIApp extends CoreApp<GUIController> {
     public void start() {
         FlatLaf.setGlobalExtraDefaults(Collections.singletonMap("@accentColor", "#39B763"));
 
-        boolean useFlatLaf = Config.get().getBoolean("settings.appearance.use_flatlaf", true);
+        boolean useFlatLaf = Config.getBoolean("settings.appearance.use_flatlaf", true);
         if (useFlatLaf && !FlatLightLaf.setup()) {
             JOptionPane.showMessageDialog(null,
                     Lang.get("error.initfl_message"),
@@ -39,7 +39,7 @@ public final class GUIApp extends CoreApp<GUIController> {
                     JOptionPane.ERROR_MESSAGE);
         }
 
-        String langTag = Config.get().get("settings.general.language", Lang.getDefaultLocale().toLanguageTag());
+        String langTag = Config.get("settings.general.language", Lang.getDefaultLocale().toLanguageTag());
         Locale locale = Locale.forLanguageTag(langTag);
         if (Lang.isSupported(locale)) {
             Lang.setLocale(locale);
@@ -47,13 +47,13 @@ public final class GUIApp extends CoreApp<GUIController> {
 
         if (useFlatLaf) {
             int hour = LocalTime.now().getHour();
-            int minHour = Config.get().getInt("settings.appearance.auto_start", 18);
-            int maxHour = Config.get().getInt("settings.appearance.auto_end", 6);
+            int minHour = Config.getInt("settings.appearance.auto_start", 18);
+            int maxHour = Config.getInt("settings.appearance.auto_end", 6);
 
             minHour = Math.min(minHour, maxHour);
             maxHour = Math.max(minHour, maxHour);
 
-            int theme = Config.get().getInt("settings.appearance.theme", 3);
+            int theme = Config.getInt("settings.appearance.theme", 3);
 
             try {
                 switch (theme) {
@@ -84,15 +84,15 @@ public final class GUIApp extends CoreApp<GUIController> {
             }
         }
 
-        int fontSize = Config.get().getInt("settings.appearance.font_size", 12);
-        String fontFamily = Config.get().get("settings.appearance.font_family",
+        int fontSize = Config.getInt("settings.appearance.font_size", 12);
+        String fontFamily = Config.get("settings.appearance.font_family",
                 UIManager.getFont("Label.font").getFamily());
 
         UIManager.put("defaultFont", new FontUIResource(fontFamily, Font.PLAIN, fontSize));
 
         SwingUtilities.invokeLater(() -> {
             SplashScreen splash = new SplashScreen();
-            splash.setVisible(Config.get().getBoolean("settings.startup.show_welcome", true));
+            splash.setVisible(Config.getBoolean("settings.startup.show_welcome", true));
 
             new Thread(() -> {
                 splash.setStatus(Lang.get("app.loading.recents"));

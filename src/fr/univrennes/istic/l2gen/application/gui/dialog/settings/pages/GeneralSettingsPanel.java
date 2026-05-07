@@ -60,18 +60,18 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                                 Lang.get("settings.general.section.startup"));
 
                 showWelcomeScreenCheckBox = new JCheckBox();
-                showWelcomeScreenCheckBox.setSelected(Config.get().getBoolean("settings.startup.show_welcome", true));
+                showWelcomeScreenCheckBox.setSelected(Config.getBoolean("settings.startup.show_welcome", true));
                 startupSection.addRow(new SettingsRowPanel(Lang.get("settings.general.startup.show_welcome"),
                                 showWelcomeScreenCheckBox));
 
                 checkUpdatesCheckBox = new JCheckBox();
-                checkUpdatesCheckBox.setSelected(Config.get().getBoolean("settings.startup.check_updates", true));
+                checkUpdatesCheckBox.setSelected(Config.getBoolean("settings.startup.check_updates", true));
                 startupSection.addRow(new SettingsRowPanel(Lang.get("settings.general.startup.check_updates"),
                                 checkUpdatesCheckBox));
 
                 reopenLastTablesCheckBox = new JCheckBox();
                 reopenLastTablesCheckBox
-                                .setSelected(Config.get().getBoolean("settings.startup.reopen_tables", false));
+                                .setSelected(Config.getBoolean("settings.startup.reopen_tables", false));
                 startupSection.addRow(new SettingsRowPanel(Lang.get("settings.general.startup.reopen_table"),
                                 reopenLastTablesCheckBox));
 
@@ -82,7 +82,7 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                                                 Lang.get("settings.general.startup.default.from_url")
                                 });
 
-                String defaultTableSource = Config.get().get("settings.startup.default_table_source", "");
+                String defaultTableSource = Config.get("settings.startup.default_table_source", "");
                 File defaultTableSourceFile = new File(defaultTableSource);
                 if (defaultTableSource.isEmpty()) {
                         defaultTableSourceComboBox.setSelectedIndex(0);
@@ -137,13 +137,13 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
 
                 confirmOnCloseCheckBox = new JCheckBox();
                 confirmOnCloseCheckBox.setSelected(
-                                Config.get().getBoolean("settings.closing.confirm_on_close", false));
+                                Config.getBoolean("settings.closing.confirm_on_close", false));
                 closingSection.addRow(new SettingsRowPanel(Lang.get("settings.general.closing.app_close"),
                                 confirmOnCloseCheckBox));
 
                 confirmOnTableCloseCheckBox = new JCheckBox();
                 confirmOnTableCloseCheckBox.setSelected(
-                                Config.get().getBoolean("settings.closing.confirm_on_table_close", false));
+                                Config.getBoolean("settings.closing.confirm_on_table_close", false));
                 closingSection.addRow(new SettingsRowPanel(Lang.get("settings.general.closing.table_close"),
                                 confirmOnTableCloseCheckBox));
 
@@ -160,19 +160,19 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                                                 .getSelectedIndex()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.startup.show_welcome", true) != showWelcomeScreenCheckBox
+                if (Config.getBoolean("settings.startup.show_welcome", true) != showWelcomeScreenCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.startup.check_updates", true) != checkUpdatesCheckBox
+                if (Config.getBoolean("settings.startup.check_updates", true) != checkUpdatesCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.startup.reopen_tables", false) != reopenLastTablesCheckBox
+                if (Config.getBoolean("settings.startup.reopen_tables", false) != reopenLastTablesCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                String defaultTableSource = Config.get().get("settings.startup.default_table_source", "");
+                String defaultTableSource = Config.get("settings.startup.default_table_source", "");
                 if (defaultTableSourceComboBox.getSelectedIndex() == 0) {
                         if (!defaultTableSource.isEmpty()) {
                                 changed = true;
@@ -186,11 +186,11 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                                 changed = true;
                         }
                 }
-                if (Config.get().getBoolean("settings.closing.confirm_on_close", false) != confirmOnCloseCheckBox
+                if (Config.getBoolean("settings.closing.confirm_on_close", false) != confirmOnCloseCheckBox
                                 .isSelected()) {
                         changed = true;
                 }
-                if (Config.get().getBoolean("settings.closing.confirm_on_table_close",
+                if (Config.getBoolean("settings.closing.confirm_on_table_close",
                                 false) != confirmOnTableCloseCheckBox.isSelected()) {
                         changed = true;
                 }
@@ -202,14 +202,14 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                         GUIController.getInstance().onLanguageChange(Locale.forLanguageTag(selectedLanguage));
                 }
 
-                Config.get().putBoolean("settings.startup.show_welcome", showWelcomeScreenCheckBox.isSelected());
-                Config.get().putBoolean("settings.startup.check_update", checkUpdatesCheckBox.isSelected());
-                Config.get().putBoolean("settings.startup.reopen_tables", reopenLastTablesCheckBox.isSelected());
+                Config.putBoolean("settings.startup.show_welcome", showWelcomeScreenCheckBox.isSelected());
+                Config.putBoolean("settings.startup.check_update", checkUpdatesCheckBox.isSelected());
+                Config.putBoolean("settings.startup.reopen_tables", reopenLastTablesCheckBox.isSelected());
 
-                Config.get().put("settings.startup.default_table_source", defaultTableSourceTextField.getText());
+                Config.put("settings.startup.default_table_source", defaultTableSourceTextField.getText());
 
-                Config.get().putBoolean("settings.closing.confirm_on_close", confirmOnCloseCheckBox.isSelected());
-                Config.get().putBoolean("settings.closing.confirm_on_table_close",
+                Config.putBoolean("settings.closing.confirm_on_close", confirmOnCloseCheckBox.isSelected());
+                Config.putBoolean("settings.closing.confirm_on_table_close",
                                 confirmOnTableCloseCheckBox.isSelected());
 
                 return changed;

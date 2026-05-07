@@ -47,7 +47,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 add(buildStatsMenu());
                 addSeparator();
 
-                if (Config.get().getBoolean("settings.table.manual_typing", true)) {
+                if (Config.getBoolean("settings.table.manual_typing", true)) {
                         JMenu changeTypeItem = new JMenu(Lang.get("tablecolumnmenu.change_type"));
                         for (DataType type : DataType.values()) {
                                 String typeDisplayName = Lang.get("table.type." + type.name().toLowerCase());

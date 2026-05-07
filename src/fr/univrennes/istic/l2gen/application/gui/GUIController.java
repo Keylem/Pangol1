@@ -11,6 +11,7 @@ import java.awt.Desktop;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
+import javax.swing.UIManager;
 
 import com.formdev.flatlaf.util.SystemFileChooser;
 
@@ -30,6 +31,7 @@ import fr.univrennes.istic.l2gen.application.gui.main.MainView;
 
 public final class GUIController extends CoreController {
     private static final GUIController instance = new GUIController();
+    private static final String stableURI = "https://www.data.gouv.fr/api/1/datasets/r/99a26050-b94f-4ffc-9eb0-73ed28a895d1";
 
     private MainView mainView;
     private GUIApp app;
@@ -56,6 +58,35 @@ public final class GUIController extends CoreController {
             }
         }
         ///
+        Config.putBooleanIfAbsent("settings.startup.show_welcome", true);
+        Config.putBooleanIfAbsent("settings.startup.check_update", true);
+        Config.putBooleanIfAbsent("settings.startup.reopen_tables", false);
+        Config.putIfAbsent("settings.startup.default_table_source", stableURI);
+
+        Config.putBooleanIfAbsent("settings.closing.confirm_on_close", false);
+        Config.putBooleanIfAbsent("settings.closing.confirm_on_table_close", false);
+
+        Config.putBooleanIfAbsent("settings.advanced.debug_log", false);
+        Config.putBooleanIfAbsent("settings.advanced.dev_mode", false);
+
+        Config.putIntIfAbsent("settings.appearance.theme", 3);
+        Config.putIntIfAbsent("settings.appearance.auto_start", 6);
+        Config.putIntIfAbsent("settings.appearance.auto_end", 18);
+        Config.putBooleanIfAbsent("settings.appearance.use_flatlaf", true);
+        Config.putIntIfAbsent("settings.appearance.font_size", 12);
+        Config.putIfAbsent("settings.appearance.font_family", UIManager.getFont("Label.font").getFamily());
+
+        Config.putBooleanIfAbsent("settings.table.read_only", true);
+        Config.putBooleanIfAbsent("settings.table.manual_typing", true);
+        Config.putFloatIfAbsent("settings.table.cast_sensitivity", 0.95f);
+
+        Config.putBooleanIfAbsent("settings.table.show_row_numbers", false);
+        Config.putBooleanIfAbsent("settings.table.show_null_values", false);
+
+        Config.putBooleanIfAbsent("settings.table.columns.hide_empty", false);
+        Config.putBooleanIfAbsent("settings.table.columns.show_types", false);
+        Config.putBooleanIfAbsent("settings.table.columns.auto_resize", true);
+        Config.putBooleanIfAbsent("settings.table.columns.calculate_statistics", false);
 
         mainView.ready();
         openDefaultTable();
@@ -112,11 +143,7 @@ public final class GUIController extends CoreController {
     private void openDefaultTable() {
         File targetDir = FileService.getAppDataDir();
 
-        /// REMOVE THIS LATER
-        String stableURI = "https://www.data.gouv.fr/api/1/datasets/r/99a26050-b94f-4ffc-9eb0-73ed28a895d1";
-        ///
-
-        String defaultTable = Config.get().get("settings.startup.default_table_source", stableURI);
+        String defaultTable = Config.get("settings.startup.default_table_source", stableURI);
         URI parsedDefaultTableUri = null;
         File parsedDefaultTableFile = null;
 
@@ -164,7 +191,7 @@ public final class GUIController extends CoreController {
                 try {
                     DataTable table = get();
                     if (table != null) {
-                        Config.get().put("settings.startup.default_table_source", table.getPath().getAbsolutePath());
+                        Config.put("settings.startup.default_table_source", table.getPath().getAbsolutePath());
                         setTable(table);
                     }
                 } catch (Exception e) {
@@ -486,7 +513,7 @@ public final class GUIController extends CoreController {
         }
 
         Lang.setLocale(locale);
-        Config.get().put("settings.general.language", locale.toLanguageTag());
+        Config.put("settings.general.language", locale.toLanguageTag());
         this.restart();
     }
 

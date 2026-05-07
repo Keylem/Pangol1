@@ -75,7 +75,7 @@ public final class TableToolBar extends JToolBar {
                 Icon closeIcon = UIManager.getIcon("InternalFrame.closeIcon");
                 JButton closeButton = new JButton(closeIcon);
                 closeButton.addActionListener(e -> {
-                        boolean confirmOnClose = Config.get().getBoolean("settings.closing.confirm_on_table_close",
+                        boolean confirmOnClose = Config.getBoolean("settings.closing.confirm_on_table_close",
                                         false);
                         if (confirmOnClose) {
                                 int result = JOptionPane.showConfirmDialog(GUIController.getInstance().getMainView(),
