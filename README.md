@@ -1,5 +1,5 @@
 <h1 style="display: flex; align-items: center; gap: 12px;">
-<img src="src/resources/icons/logo.png" alt="Preview" width="48"/>
+<img src="docs/images/logo.png" alt="Preview" width="48"/>
 Pangol1
 </h1>
 
@@ -11,7 +11,7 @@ Pangol1
 [![Build](https://github.com/jules1univ/Pangol1/actions/workflows/build-jar.yml/badge.svg)](https://github.com/jules1univ/Pangol1/actions/workflows/build-jar.yml)
 [![Test](https://github.com/jules1univ/Pangol1/actions/workflows/test-junit.yml/badge.svg)](https://github.com/jules1univ/Pangol1/actions/workflows/test-junit.yml)
 
-![MainView](docs/images/main_view.png)
+![MainView](docs/images/main_with_chart.png)
 
 ## Setup
 
