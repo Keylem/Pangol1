@@ -10,6 +10,7 @@ import fr.univrennes.istic.l2gen.application.core.filter.Filter;
 import fr.univrennes.istic.l2gen.application.core.filter.FilterCondition;
 import fr.univrennes.istic.l2gen.application.core.filter.FilterLogic;
 import fr.univrennes.istic.l2gen.application.core.filter.FilterOperator;
+import fr.univrennes.istic.l2gen.application.core.services.stats.StatisticService;
 import fr.univrennes.istic.l2gen.application.core.table.DataTable;
 import fr.univrennes.istic.l2gen.application.core.table.DataType;
 
@@ -23,6 +24,7 @@ import java.util.List;
 public final class FilterDialog extends JDialog {
 
     private static final String CARD_STRING = "STRING";
+    private static final String CARD_CATEGORY = "CATEGORY";
     private static final String CARD_NUMERIC = "NUMERIC";
     private static final String CARD_DATE = "DATE";
     private static final String CARD_BOOLEAN = "BOOLEAN";
@@ -44,6 +46,7 @@ public final class FilterDialog extends JDialog {
 
     private JPanel searchInputsPanel;
     private JTextField searchTextField;
+    private JComboBox<String> searchSelectComboBox;
     private JSpinner searchNumericSpinner;
     private JSpinner searchDateSpinner;
     private JComboBox<String> searchBooleanComboBox;
@@ -167,6 +170,10 @@ public final class FilterDialog extends JDialog {
 
         searchTextField = new JTextField();
         searchInputsPanel.add(buildLabeledInputPanel(Lang.get("filter.search_term"), searchTextField), CARD_STRING);
+
+        searchSelectComboBox = new JComboBox<>();
+        searchInputsPanel.add(buildLabeledInputPanel(Lang.get("filter.search_category"), searchSelectComboBox),
+                CARD_CATEGORY);
 
         searchNumericSpinner = createDoubleSpinner();
         searchInputsPanel.add(buildLabeledInputPanel(Lang.get("tablecolumnmenu.filter.double"), searchNumericSpinner),
@@ -331,7 +338,20 @@ public final class FilterDialog extends JDialog {
             case INTEGER, DOUBLE -> CARD_NUMERIC;
             case DATE -> CARD_DATE;
             case BOOLEAN -> CARD_BOOLEAN;
-            case STRING, EMPTY -> CARD_STRING;
+            case EMPTY -> CARD_STRING;
+            case STRING -> {
+                boolean hasCategories = StatisticService.hasColumnCategories(table, columnComboBox.getSelectedIndex());
+                if (hasCategories) {
+
+                    List<String> categories = StatisticService.getColumnCategories(table,
+                            columnComboBox.getSelectedIndex());
+                    searchSelectComboBox.setModel(new DefaultComboBoxModel<>(categories.toArray(new String[0])));
+
+                    yield CARD_CATEGORY;
+                } else {
+                    yield CARD_STRING;
+                }
+            }
         };
     }
 
@@ -421,13 +441,19 @@ public final class FilterDialog extends JDialog {
                             description = selectedColumnName + " = " + value;
                         }
                         case STRING, EMPTY -> {
-                            String searchTerm = searchTextField.getText().trim();
-                            if (searchTerm.isEmpty()) {
-                                showValidationError(Lang.get("filter.validation.search_term"));
-                                return;
+                            if (searchSelectComboBox.getItemCount() > 0) {
+                                String category = (String) searchSelectComboBox.getSelectedItem();
+                                filter = Filter.equals(selectedColumnIndex, category);
+                                description = selectedColumnName + " = \"" + category + "\"";
+                            } else {
+                                String searchTerm = searchTextField.getText().trim();
+                                if (searchTerm.isEmpty()) {
+                                    showValidationError(Lang.get("filter.validation.search_term"));
+                                    return;
+                                }
+                                filter = Filter.search(selectedColumnIndex, searchTerm);
+                                description = selectedColumnName + " LIKE \"" + searchTerm + "\"";
                             }
-                            filter = Filter.search(selectedColumnIndex, searchTerm);
-                            description = selectedColumnName + " LIKE \"" + searchTerm + "\"";
                         }
                     }
                 }
