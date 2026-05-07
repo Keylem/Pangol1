@@ -18,7 +18,7 @@ except ImportError:
     import javalang
 
 SOURCE_DIR = Path("src/fr/univrennes/istic/l2gen")
-UML_DIR = Path("uml")
+UML_DIR = Path("docs/uml")
 
 VISIBILITY_SYMBOLS = {
     "public": "+",

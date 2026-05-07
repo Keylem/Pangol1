@@ -12,7 +12,7 @@
     "editor.defaultFormatter": "redhat.java",
     "editor.tabSize": 4
   },
-  "umlGenerator.outputDirectory": "./uml",
+  "umlGenerator.outputDirectory": "./docs/uml",
   "files.watcherExclude": {
     "**/target": true,
     "**/.mvn": true,

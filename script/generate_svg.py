@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 PLANTUML_JAR = Path("script/plantuml.jar")
-UML_DIR = Path("uml")
+UML_DIR = Path("docs/uml")
 
 
 def check_java():

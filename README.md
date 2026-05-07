@@ -3,7 +3,7 @@
 Pangol1
 </h1>
 
-> Generate SVG charts from CSV files.
+> Generate SVG charts from data files.
 
 ![C](https://img.shields.io/github/languages/top/jules1univ/Pangol1?label=Java%20🔥)
 ![Platform](https://img.shields.io/badge/Platform%20🌍-Windows%20|%20Linux%20|%20MacOS-purple)
@@ -11,10 +11,7 @@ Pangol1
 [![Build](https://github.com/jules1univ/Pangol1/actions/workflows/build-jar.yml/badge.svg)](https://github.com/jules1univ/Pangol1/actions/workflows/build-jar.yml)
 [![Test](https://github.com/jules1univ/Pangol1/actions/workflows/test-junit.yml/badge.svg)](https://github.com/jules1univ/Pangol1/actions/workflows/test-junit.yml)
 
-<!-- > Preview 🎥 -->
-
-<!-- TODO: ajouter des images du projet ici -->
-<!-- Vu Desktop -->
+![MainView](docs/images/main_view.png)
 
 ## Setup
 
@@ -40,27 +37,24 @@ cd Pangol1
 
 ## Libraries
 
-- **DuckDB JDBC 1.2.1**
+Les bibliothèques utilisées dans ce projet sont:
 
-  > Embedded analytical database used to efficiently query CSV data.
-
-- **FlatLaf 3.7.1**
-
-  > Modern Look & Feel for the graphical user interface.
-
-- **FlatLaf Extras 3.7.1**
-
-  > Additional UI components and utilities for FlatLaf.
+- **FlatLaf**: Pour une interface utilisateur moderne et agréable.
+- **DuckDB JDBC**: Pour la gestion de la base de données en mémoire.
+- **JUnit**: Pour les tests unitaires.
+- **Batik**: Pour la conversion des graphiques SVG en images PNG.
+- **OpenHTMLToPDF**: Pour la conversion des rapports HTML en PDF.
+- **JavaFX**: Pour l'affichage du rapport final en HTML.
 
 ## Lancer l'application
 
-Après avoir cloné et ouvert le projet :
+Après avoir cloné et ouvert le projet:
 
 ```bash
 javac -cp "lib/*" application/Pangol1.java
 ```
 
-Ou, si un JAR est construit via le workflow :
+Ou, si un JAR est construit via le workflow:
 
 ```bash
 java -jar Pangol1.jar
@@ -70,11 +64,9 @@ java -jar Pangol1.jar
 
 **Membres**: [Liste des membres](docs/MEMBERS.md)
 
-**Contribution**: [Guide de contribution](CONTRIBUTING.md)
+**Contribution**: [Comment contribuer](CONTRIBUTING.md)
 
 **Documentation**: [Documentation complète](docs/DOCUMENTATION.md)
-
-**TODOs**: [Liste des tâches en cours](docs/TODOS.md)
 
 ## License
 

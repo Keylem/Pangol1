@@ -1,734 +1,1099 @@
-# 📖 Guide de Contribution
+# Guide de Contribution - Pangol1
 
-> Guide complet pour contribuer au projet Pangol1 en respectant les standards de qualité du codebase
+Bienvenue ! Merci de votre intérêt pour contribuer à **Pangol1**. Ce guide vous explique comment configurer votre environnement, respecter les conventions de code, et soumettre vos contributions.
 
-**Table of Contents**
+## Table des matières
 
-- [Règles générales](#règles-générales)
-- [Configuration de l'environnement](#configuration-de-lenvironnement)
-- [Conventions de code Java](#conventions-de-code-java)
-- [Système d'annotations SVG](#système-dannotations-svg)
-- [Formatage et style](#formatage-et-style)
-- [Documentation et Javadoc](#documentation-et-javadoc)
-- [Tests unitaires](#tests-unitaires)
-- [Messages de commit](#messages-de-commit)
-- [Workflow de contribution](#workflow-de-contribution)
-- [Checklist avant de committer](#checklist-avant-de-committer)
-- [Ressources utiles](#ressources-utiles)
+1. [Mise en place de l'environnement](#mise-en-place-de-lenvironnement)
+2. [Conventions de code](#conventions-de-code)
+3. [Workflow de contribution](#workflow-de-contribution)
+4. [Tests et qualité](#tests-et-qualité)
+5. [Documentation](#documentation)
+6. [Process de review](#process-de-review)
+7. [Signaler des problèmes](#signaler-des-problèmes)
 
-## Règles générales
-
-### Responsabilité des tâches
-
-- **Ne travaillez pas simultanément** sur les mêmes fichiers que d'autres contributeurs
-- **Répartissez-vous les tâches** par domaines/modules (geometry, svg, io, etc.)
-- **Consultez la liste des TODOs** dans [docs/TODOS.md](docs/TODOS.md) avant de commencer
-- **Une tâche = une personne** jusqu'à sa finalisation
-
-### Gestion du code
-
-- **Ne créez pas de branches** autres que `main` (pour simplifier)
-- **Pullez régulièrement** les changements : `git pull`
-- **Commitez fréquemment** avec des messages clairs (voir [Messages de commit](#messages-de-commit))
-- **N'oubliez pas** : `git push` à la fin de votre session de travail
-
-## Configuration de l'environnement
+## Mise en place de l'environnement
 
 ### Prérequis
 
-- **Java JDK 21** : `java --version` doit afficher 21.x
-- **VS Code** : avec l'extension "Extension Pack for Java" (Microsoft)
-- **Git** : version récente
+- **Java JDK 21** : [Télécharger](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
+- **Maven 3.8+** : [Télécharger](https://maven.apache.org/download.cgi)
+- **Git 2.30+** : [Télécharger](https://git-scm.com)
+- **VS Code** avec les extensions :
+  - Extension Pack for Java (Microsoft)
+  - Maven for Java (Microsoft)
 
-### Installation initiale
+### Configuration initiale
+
+#### 1. Forker et cloner le repository
 
 ```bash
-# 1. Cloner le dépôt
-git clone https://github.com/jules1univ/Pangol1.git
+# Fork sur GitHub via l'interface web
+# Puis cloner votre fork
+git clone https://github.com/YOUR_USERNAME/Pangol1.git
 cd Pangol1
 
-# 2. Vérifier le JDK
-java --version
-
-# 3. Ouvrir dans VS Code
-code .
-
-# 4. L'extension Java détecte automatiquement le projet
-# Attendez que la première synchronisation se termine
+# Ajouter le repository original comme remote
+git remote add upstream https://github.com/jules1univ/Pangol1.git
 ```
 
-### Extensions recommandées
-
-Installer les extensions VS Code listées dans [.vscode/extensions.json](.vscode/extensions.json) :
+#### 2. Configurer Java dans VS Code
 
 ```bash
-# Automatiquement installées si vous cliquez sur "Install Recommended Extensions"
+# Vérifier la version de Java
+java --version
+# Doit afficher : openjdk version "21.*"
+
+# Configurer JAVA_HOME (si nécessaire)
+export JAVA_HOME=$(dirname $(dirname $(which java)))
+
+# Vérifier Maven
+mvn --version
 ```
 
-## Conventions de code Java
+#### 3. Construire le projet localement
 
-### Structure générale
+```bash
+# Nettoyer et construire
+mvn clean install
 
-#### 1️⃣ Package et imports
+# Ou avec le wrapper inclus
+./mvnw clean install
+
+# Lancer les tests
+mvn test
+
+# Générer la documentation
+mvn javadoc:javadoc
+```
+
+#### 4. Lancer l'application en développement
+
+```bash
+# Via Maven
+mvn exec:java
+
+# Via VS Code : F5 ou Run → Run Without Debugging
+# Via IDE : Ctrl+F5 (ou Cmd+F5 sur Mac)
+```
+
+## Conventions de code
+
+### 1. Nommage des classes
+
+**Règle** : `PascalCase`, descriptif, pas de préfixes/suffixes génériques
 
 ```java
-package fr.univrennes.istic.l2gen.geometry.base;
+// ✅ BON
+public class TableColumnContextMenu extends JPopupMenu { }
+public class StatisticService { }
+public class DataTable { }
+public class FilterBuilder { }
 
-// Imports triés et organisés
+// ❌ MAUVAIS
+public class TableMenu { }  // Trop court, manque de contexte
+public class TDCM { }       // Trop condensé
+public class TableColumnContextMenuImpl { }  // Suffixe redondant
+```
+
+**Interfaces** : Préfixe `I`
+
+```java
+// ✅ BON
+public interface IShape { }
+public interface ISVGAttribute { }
+
+// ❌ MAUVAIS
+public interface Shape { }
+public interface ShapeInterface { }
+```
+
+**Classes abstraites** : Préfixe `Abstract`
+
+```java
+// ✅ BON
+public abstract class AbstractShape implements IShape { }
+public abstract class AbstractAnimate { }
+
+// ❌ MAUVAIS
+public abstract class Shape { }
+public abstract class BaseShape { }
+```
+
+**Énumérations** : `PascalCase` avec valeurs en `SCREAMING_SNAKE_CASE`
+
+```java
+// ✅ BON
+public enum DataType {
+    STRING,
+    INTEGER,
+    DOUBLE,
+    DATE,
+    BOOLEAN
+}
+
+// ❌ MAUVAIS
+public enum dataType { }
+public enum DATA_TYPE { }
+```
+
+### 2. Nommage des méthodes
+
+**Règle** : `camelCase`, verbes d'action, pas de fluff
+
+```java
+// ✅ BON
+public void addFilter(Filter filter) { }
+public List<Object> getColumn(int index) { }
+public boolean hasContent() { }
+public void removeFilter(int index) { }
+
+// ❌ MAUVAIS
+public void add_filter(Filter filter) { }  // Snake case
+public void doAddFilter(Filter filter) { }  // Redondant
+public void getFilterList() { }  // Pour un setter → setFilterList()
+```
+
+**Getters/Setters** : Pattern standard
+
+```java
+// ✅ BON
+public int getWidth() { return width; }
+public void setWidth(int width) { this.width = width; }
+public boolean hasChildren() { return children.size() > 0; }
+
+// ❌ MAUVAIS
+public int width() { }  // Pas de "get" → ambiguïté
+public void width(int w) { }  // Pas de "set"
+public int getChild(int i) { return children.get(i); }  // Pas de "is/has"
+```
+
+**Méthodes statiques** : Verbes ou adjectifs
+
+```java
+// ✅ BON
+public static Filter topN(int columnIndex, int n) { }
+public static Filter sort(int columnIndex, boolean ascending) { }
+
+// ❌ MAUVAIS
+public static Filter top_n(int columnIndex, int n) { }
+```
+
+### 3. Nommage des variables
+
+**Règle** : `camelCase`, descriptif, éviter les abbréviations
+
+```java
+// ✅ BON
+int tableIndex = 0;
+String columnName = "Age";
+DataType columnType = DataType.INTEGER;
+List<Object> columnValues = new ArrayList<>();
+
+// ❌ MAUVAIS
+int tIdx = 0;  // Trop abrégé
+int ti = 0;  // Non descriptif
+int idx = 0;  // Vague
+List vals = new ArrayList();  // Type raw + abrégé
+```
+
+**Boucles** : Noms explicites sauf contexte mathématique
+
+```java
+// ✅ BON
+for (IShape shape : shapes) { }
+for (int rowIndex = 0; rowIndex < rowCount; rowIndex++) { }
+
+// Pour les calculs géométriques : acceptable
+for (int i = 0; i < points.length; i++) { }  // Points Bézier
+
+// ❌ MAUVAIS
+for (IShape s : shapes) { }  // Trop court
+for (int i = 0; i < rows.size(); i++) { }  // Si pas contexte mathématique
+```
+
+**Paramètres** : Noms significatifs
+
+```java
+// ✅ BON
+public void setPosition(double x, double y) { }
+public Filter byRange(int columnIndex, double min, double max) { }
+
+// ❌ MAUVAIS
+public void setPosition(double a, double b) { }
+public Filter byRange(int i, double minVal, double maxVal) { }  // Incohérent
+```
+
+### 4. Constantes
+
+**Règle** : `SCREAMING_SNAKE_CASE`, `static final`, visibilité explicite
+
+```java
+// ✅ BON
+private static final int MAX_CATEGORIES = 25;
+private static final String DEFAULT_ENCODING = "UTF-8";
+public static final double EPSILON = 1e-10;
+
+// Constantes métier
+static final int DEFAULT_WINDOW_WIDTH = 800;
+static final int DEFAULT_WINDOW_HEIGHT = 600;
+
+// ❌ MAUVAIS
+static final int maxCategories = 25;  // camelCase
+public final int MAX = 25;  // Non descriptif
+static int MAX_CATEGORIES = 25;  // Pas final
+```
+
+### 5. Formatage et indentation
+
+**Indentation** : **4 espaces** (pas de tabs)
+
+```java
+// ✅ BON
+public class Example {
+    private int field;
+
+    public void method() {
+        if (condition) {
+            for (int i = 0; i < 10; i++) {
+                statement();
+            }
+        }
+    }
+}
+
+// ❌ MAUVAIS
+public class Example {
+  private int field;  // 2 espaces
+
+  public void method() {
+      if (condition) {  // 4 espaces pour if, mais incohérent
+          statement();
+      }
+  }
+}
+```
+
+**Accolades** : Style égyptien (ouvrante sur la même ligne)
+
+```java
+// ✅ BON
+public class MyClass {
+    public void method() {
+        if (condition) {
+            statement();
+        }
+    }
+}
+
+// ❌ MAUVAIS (style Allman)
+public class MyClass
+{
+    public void method()
+    {
+        if (condition)
+        {
+            statement();
+        }
+    }
+}
+```
+
+**Espaces** : Autour des opérateurs et après les virgules
+
+```java
+// ✅ BON
+int result = a + b - c * d;
+if (x > 0 && y < 10) { }
+List<String> items = Arrays.asList("a", "b", "c");
+methodCall(param1, param2, param3);
+
+// ❌ MAUVAIS
+int result=a+b-c*d;
+if(x>0&&y<10) { }
+List<String> items = Arrays.asList("a","b","c");
+methodCall(param1,param2,param3);
+```
+
+**Longueur de ligne** : Maximum **120 caractères**
+
+```java
+// ✅ BON
+String longMessage = String.format(
+    "The value %s is invalid for column %s with type %s",
+    value, columnName, columnType);
+
+// ❌ MAUVAIS
+String longMessage = String.format("The value %s is invalid for column %s with type %s", value, columnName, columnType);
+```
+
+### 6. Importations
+
+**Règle** : Alphabétiques, organisées par groupe, explicites (pas de wildcards)
+
+```java
+// ✅ BON
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import fr.univrennes.istic.l2gen.geometry.AbstractShape;
-import fr.univrennes.istic.l2gen.geometry.IShape;
-import fr.univrennes.istic.l2gen.geometry.Point;
-import fr.univrennes.istic.l2gen.svg.interfaces.field.SVGField;
-import fr.univrennes.istic.l2gen.svg.interfaces.tag.SVGTag;
+import fr.univrennes.istic.l2gen.application.core.filter.Filter;
+import fr.univrennes.istic.l2gen.application.core.table.DataTable;
+import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputIntDialog;
+
+// ❌ MAUVAIS
+import java.util.*;  // Wildcard
+import fr.univrennes.istic.l2gen.application.*;  // Wildcard
+import java.util.List;
+import java.util.ArrayList;  // Non-alphabétique
+
+import fr.univrennes.istic.l2gen.application.gui.dialog.input.InputIntDialog;
+import fr.univrennes.istic.l2gen.application.core.table.DataTable;  // Mal organisé
 ```
 
-**Règles** :
+### 7. Modificateurs d'accès
 
-- ✅ Imports de `java.*` d'abord, puis `fr.univrennes.*`
-- ✅ Organisés alphabétiquement par classe
-- ❌ N'oubliez pas les imports (VS Code les organise automatiquement)
-
-#### 2️⃣ Déclaration de classe
+**Règle** : Explicite, préférer `private` par défaut
 
 ```java
+// ✅ BON
+public class TableColumnContextMenu extends JPopupMenu {
+    private final DataTable table;
+    private final int tableIndex;
+
+    public void refresh() { }  // API publique
+
+    private JMenu buildFilterMenu() { }  // Interne
+    private void updateUI() { }  // Interne
+}
+
+// ❌ MAUVAIS
+public class TableColumnContextMenu extends JPopupMenu {
+    DataTable table;  // Package-private (implicite)
+    int tableIndex;  // Pas final (mutabilité)
+
+    void refresh() { }  // Package-private (non intentionnel ?)
+}
+```
+
+**Final sur les classes** : Quand pas d'héritage prévu
+
+```java
+// ✅ BON
+public final class Point implements IShape { }
+public final class TableColumnContextMenu extends JPopupMenu { }
+
+// ❌ MAUVAIS
+public class Point implements IShape { }  // Pas final (peut être subclassé accidentellement)
+```
+
+### 8. Javadoc et commentaires
+
+**Javadoc en français** : Obligatoire pour toute API publique
+
+```java
+// ✅ BON
 /**
- * Représente un cercle implémentant l'interface IShape.
- * Un cercle est défini par un centre et un rayon.
+ * Ajoute un filtre à la table de données.
  *
- * @see AbstractShape
- * @see IShape
+ * Le filtre est appliqué immédiatement et met à jour
+ * l'affichage du tableau.
+ *
+ * @param filter le filtre à ajouter
+ * @throws IllegalArgumentException si le filtre est null
  */
-@SVGTag("circle")
-public final class Circle extends AbstractShape {
-    // Corps de la classe
+public void addFilter(Filter filter) {
+    // ...
+}
+
+// ❌ MAUVAIS
+public void addFilter(Filter filter) {  // Pas de Javadoc
+    // ...
+}
+
+/** Adds a filter */  // En anglais
+public void addFilter(Filter filter) { }
+
+/** @param f the filter */  // Pas d'explication
+public void addFilter(Filter f) { }
+```
+
+**Commentaires explicatifs** : Au-dessus du code, brefs
+
+```java
+// ✅ BON
+// Limiter le nombre de catégories pour éviter un menu trop grand
+if (categories.size() > MAX_CATEGORIES) {
+    // Utiliser un dialogue de sélection au lieu d'un sous-menu
+    showSelectionDialog(categories);
+}
+
+// ❌ MAUVAIS
+if (categories.size() > MAX_CATEGORIES) {  // if categories > 25
+    showSelectionDialog(categories);  // show dialog
+}
+
+// TODO: optimize this later
+for (int i = 0; i < 1000000; i++) {  // Commentaire interne
+    // ...
 }
 ```
 
-**Règles** :
-
-- ✅ Classes `final` si non destinées à être surchargées
-- ✅ Javadoc obligatoire (voir [Documentation et Javadoc](#documentation-et-javadoc))
-- ✅ Annotations `@SVGTag` pour les formes géométriques
-- ✅ Une classe par fichier
-
-#### 3️⃣ Indentation et formatage
+**@Override systématique** : Sur toutes les méthodes surchargées
 
 ```java
-public final class Circle extends AbstractShape {
-    // 4 espaces par niveau d'indentation
-    @SVGField("r")
-    private double radius;
+// ✅ BON
+@Override
+public String toString() {
+    return String.format("Point(%f, %f)", x, y);
+}
 
-    @SVGField({"cx", "cy"})
-    private Point center;
+@Override
+public boolean equals(Object obj) {
+    if (!(obj instanceof Point)) return false;
+    Point other = (Point) obj;
+    return x == other.x && y == other.y;
+}
 
-    // Constructeurs
-    public Circle() {
-        this.radius = 0;
-        this.center = new Point(0, 0);
+// ❌ MAUVAIS
+public String toString() {  // Pas @Override
+    return String.format("Point(%f, %f)", x, y);
+}
+```
+
+### 9. Gestion des exceptions
+
+**Exceptions spécifiques** : Attraper les exceptions les plus précises possibles
+
+```java
+// ✅ BON
+try {
+    int value = Integer.parseInt(input);
+    table.addFilter(Filter.topN(columnIndex, value));
+} catch (NumberFormatException e) {
+    showErrorDialog("Veuillez entrer un nombre entier");
+    Log.warn("Invalid integer input: " + input);
+} catch (IllegalArgumentException e) {
+    showErrorDialog("Paramètres invalides: " + e.getMessage());
+    Log.error("Invalid filter parameters", e);
+}
+
+// ❌ MAUVAIS
+try {
+    // ...
+} catch (Exception e) {  // Trop général
+    // Silent failure - pas bon
+}
+
+try {
+    // ...
+} catch (Exception ignored) {  // Peut cacher des bugs
+}
+```
+
+**Exceptions ignorées** : Variable nommée `ignored`, rare et justifié
+
+```java
+// ✅ BON (quand vraiment OK d'ignorer)
+try {
+    // Tentative de cleanup optionnel
+    resource.close();
+} catch (IOException ignored) {
+    // Le resource n'existe peut-être pas, c'est OK
+}
+
+// ❌ MAUVAIS
+try {
+    // ...
+} catch (Exception e) {
+    e.printStackTrace();  // Jamais!
+}
+```
+
+### 10. Organisation d'une classe
+
+**Ordre typique des membres** :
+
+```java
+import statements;
+import ...;
+
+/**
+ * Javadoc de la classe.
+ */
+@Annotations
+public class MyClass extends Parent implements Interface1, Interface2 {
+
+    // 1. Constantes statiques
+    private static final int MAX_SIZE = 100;
+    private static final String DEFAULT_NAME = "default";
+
+    // 2. Champs d'instance (avec annotations)
+    private int count;
+    private String name;
+    private List<Item> items;
+
+    // 3. Constructeurs
+    public MyClass() {
+        this(DEFAULT_NAME, 0);
     }
 
-    // Méthodes
-    public double getRadius() {
-        return this.radius;
-    }
-}
-```
-
-**Règles** :
-
-- ✅ Indentation : **4 espaces** (jamais de tabs)
-- ✅ Accolades sur la même ligne : `public void method() {`
-- ✅ Espace après `if`, `for`, `while` : `if (condition) {`
-- ✅ Pas d'espace avant parenthèses de méthodes : `method()` et non ` method()`
-
-### Nommage
-
-#### Classes
-
-```java
-// ✅ Bon : PascalCase, nom significatif
-public class Circle extends AbstractShape { }
-public class SVGStyle implements ISVGAttribute { }
-public class ColorParseException extends Exception { }
-
-// ❌ Mauvais
-public class circle { }          // minuscule
-public class C { }               // trop court
-public class MyClass123 { }      // chiffres inutiles
-```
-
-#### Constantes
-
-```java
-// ✅ Bon : UPPER_CASE, static final
-public static final Color RED = new Color("#ff0000");
-public static final Color BLACK = new Color("#000000");
-public static final int MAX_RETRIES = 3;
-
-// ❌ Mauvais
-public static Color red;         // pas de final
-private static int maxRetries;   // pas UPPER_CASE
-```
-
-#### Méthodes et variables
-
-```java
-// ✅ Bon : camelCase, noms génériques
-public void move(double dx, double dy) { }
-public double getWidth() { }
-public Optional<Double> strokeWidth() { }
-private int calculateArea() { }
-private List<Point> points = new ArrayList<>();
-
-// ❌ Mauvais
-public void MOVE() { }           // UPPER_CASE
-public void m(double d1) { }     // trop court
-private int max_width;           // snake_case
-```
-
-#### Getters/Setters de style fluent
-
-```java
-// ✅ Bon : méthode retourne `this` pour le chaînage
-public SVGStyle fillColor(Color color) {
-    this.fillColor = Optional.of(color);
-    return this;  // Permet: style.fillColor(...).strokeWidth(...)
-}
-
-public Optional<Color> fillColor() {
-    return fillColor;
-}
-
-// Utilisation
-SVGStyle style = new SVGStyle();
-style.fillColor(Color.RED)
-     .strokeColor(Color.BLACK)
-     .strokeWidth(2.0);  // Chaînage fluide
-```
-
-### Optionals au lieu de null
-
-```java
-// ✅ Bon : utiliser Optional pour les valeurs optionnelles
-private Optional<Double> fontSize = Optional.empty();
-
-public SVGStyle fontSize(double size) {
-    this.fontSize = Optional.of(size);
-    return this;
-}
-
-public Optional<Double> fontSize() {
-    return fontSize;
-}
-
-// Utilisation
-Optional<Double> size = style.fontSize();
-if (size.isPresent()) {
-    System.out.println("Size: " + size.get());
-}
-
-// Ou (plus moderne)
-size.ifPresent(s -> System.out.println("Size: " + s));
-
-// ❌ Mauvais
-private Double fontSize = null;  // null au lieu d'Optional
-if (fontSize != null) { }        // Vérifie null instead of Optional
-```
-
-### Constructeurs
-
-```java
-public class Circle extends AbstractShape {
-    private double radius;
-    private Point center;
-
-    // ✅ Constructeur par défaut (obligatoire pour l'import SVG)
-    public Circle() {
-        this.radius = 0;
-        this.center = new Point(0, 0);
+    public MyClass(String name) {
+        this(name, 0);
     }
 
-    // ✅ Constructeur avec paramètres tous nécessaires
-    public Circle(double x, double y, double radius) {
-        this.radius = radius;
-        this.center = new Point(x, y);
+    public MyClass(String name, int initialCount) {
+        this.name = name;
+        this.count = initialCount;
+        this.items = new ArrayList<>();
     }
 
-    // ✅ Constructeur avec Point
-    public Circle(Point center, double radius) {
-        this.center = center;
-        this.radius = radius;
-    }
-}
-```
-
-**Règles** :
-
-- ✅ Toujours inclure un constructeur **sans paramètres** (obligatoire pour `SVGImport`)
-- ✅ Plusieurs constructeurs = flexibilité pour les usagers
-- ✅ Valider les inputs (voir [Validation](#validation))
-
-### Validation des inputs
-
-```java
-// ✅ Bon : valide les inputs
-public Circle(double x, double y, double radius) {
-    if (radius < 0) {
-        throw new IllegalArgumentException("Radius cannot be negative: " + radius);
-    }
-    this.radius = radius;
-    this.center = new Point(x, y);
-}
-
-// ✅ Bon : null checks
-public void addChild(IShape child) {
-    if (child == null) {
-        throw new IllegalArgumentException("Child cannot be null");
-    }
-    this.children.add(child);
-}
-
-// ❌ Mauvais : pas de validation
-public Circle(double x, double y, double radius) {
-    this.radius = radius;  // Pas de vérification si négatif
-    this.center = new Point(x, y);
-}
-```
-
-## Système d'annotations SVG
-
-### Annotations clés
-
-#### `@SVGTag(String value)`
-
-Marque une classe comme élément SVG exportable.
-
-```java
-@SVGTag("circle")       // Exporte en <circle>
-public class Circle { }
-
-@SVGTag("rect")         // Exporte en <rect>
-public class Rectangle { }
-
-@SVGTag("g")            // Exporte en <g> (groupement)
-public class Group { }
-```
-
-**Règles** :
-
-- ✅ Obligatoire pour toutes les classes implémentant `ISVGShape`
-- ✅ Le nom doit correspondre à un tag SVG valide
-- ❌ Les noms invalides génèrent une erreur de compilation
-
-#### `@SVGField(String[] value)`
-
-Mappe un champ Java à un attribut SVG.
-
-```java
-// Simple : un champ = un attribut
-@SVGField("r")
-private double radius;  // Export: r="50"
-
-@SVGField("cx")
-private double centerX; // Export: cx="100"
-
-// Point : un champ = deux attributs
-@SVGField({"cx", "cy"})
-private Point center;   // Export: cx="100" cy="50"
-
-// Conteneur : un champ = liste d'enfants
-@SVGField
-private List<IShape> children;  // Export: chaque enfant est un sous-élément
-```
-
-**Règles** :
-
-- ✅ Utilisez un tableau pour les points (2 attributs)
-- ✅ Utilisez un nom générique pour les attributs `ISVGAttribute` (style, transform)
-- ✅ Pas d'annotation = pas d'export
-
-#### `@SVGPoint`, `@SVGPointX`, `@SVGPointY`
-
-Marque une classe comme point et ses coordonnées.
-
-```java
-@SVGPoint
-public class Point implements IShape {
-    @SVGPointX
-    private double x;
-
-    @SVGPointY
-    private double y;
-}
-```
-
-**Règles** :
-
-- ✅ Obligatoire pour la classe `Point`
-- ✅ Une seule classe peut avoir `@SVGPoint`
-
-#### `@SVGContent`
-
-Marque un champ comme contenu textuel (au lieu d'attribut).
-
-```java
-@SVGTag("text")
-public class Text extends AbstractShape {
-    @SVGContent
-    private String content;  // Export: <text>content</text>
-
-    @SVGField("x")
-    private double x;
-}
-```
-
-**Règles** :
-
-- ✅ Permet le contenu textuel d'une balise
-- ❌ Une seule annotation `@SVGContent` par classe
-
-## Formatage et style
-
-### Formatage automatique
-
-**Activez le formatage lors de la sauvegarde** :
-
-1. Ouvrez `Settings` (Ctrl+`,` ou Cmd+`,`)
-2. Cherchez "Format On Save"
-3. Cochez `Editor: Format On Save`
-
-Ou manuellement : `Shift+Alt+F` (format le fichier courant)
-
-### Longueur des lignes
-
-```java
-// ✅ Bon : lisible, pas trop long
-public String getDescription(int indent) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(super.getDescription(indent));
-    sb.append(" R=").append(this.radius);
-    return sb.toString();
-}
-
-// ❌ Mauvais : ligne trop longue
-public String getDescription(int indent) { return " ".repeat(Math.max(0, indent)) + this.getClass().getSimpleName() + " R=" + this.radius; }
-```
-
-**Règles** :
-
-- ✅ Maximum **120 caractères** par ligne (si possible)
-- ✅ Cassez les lignes logiquement
-
-### Espaces et blank lines
-
-```java
-public class Circle extends AbstractShape {
-    // Blank line après les déclarations de champs
-    private double radius;
-    private Point center;
-
-    // Blank line avant les constructeurs
-    public Circle() {
-        this.radius = 0;
+    // 4. Getters et Setters
+    public String getName() {
+        return name;
     }
 
-    // Blank line entre les méthodes publiques
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    // 5. Méthodes publiques
+    public void add(Item item) {
+        items.add(item);
+        count++;
+    }
+
+    public void remove(Item item) {
+        items.remove(item);
+        count--;
+    }
+
+    // 6. Méthodes surchargées (@Override)
     @Override
-    public double getWidth() {
-        return 2 * this.radius;
+    public String toString() {
+        return String.format("%s (count: %d)", name, count);
     }
 
-    // Blank line avant les méthodes privées
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof MyClass)) return false;
+        MyClass other = (MyClass) obj;
+        return name.equals(other.name) && count == other.count;
+    }
+
+    // 7. Méthodes privées/helper
     private void validate() {
+        if (count < 0) {
+            throw new IllegalArgumentException("count cannot be negative");
+        }
+    }
+}
+```
+
+## Workflow de contribution
+
+### 1. Créer une branche pour votre feature
+
+```bash
+# À jour depuis upstream
+git fetch upstream
+git rebase upstream/main
+
+# Créer une branche feature
+git checkout -b feature/description-courte
+```
+
+**Conventions de noms de branches** :
+
+- `feature/` : Nouvelle fonctionnalité
+- `fix/` : Correction de bug
+- `docs/` : Documentation
+- `refactor/` : Refactorisation
+- `test/` : Ajout de tests
+
+Exemples :
+
+```bash
+git checkout -b feature/add-correlation-filter
+git checkout -b fix/table-update-not-showing
+git checkout -b docs/update-api-docs
+git checkout -b refactor/simplify-filter-logic
+```
+
+### 2. Développer votre feature
+
+```bash
+# Travailler sur votre branche
+# Commits réguliers
+git add .
+git commit -m "feat: brève description"
+
+# Avant de pusher : mettre à jour depuis upstream
+git fetch upstream
+git rebase upstream/main
+```
+
+### 3. Messages de commit
+
+**Format** : `type: description`
+
+Types :
+
+- `feat` : Nouvelle fonctionnalité
+- `fix` : Correction de bug
+- `docs` : Documentation
+- `style` : Formatage, points-virgules (pas de logique)
+- `refactor` : Refactorisation sans changement de comportement
+- `perf` : Amélioration de performance
+- `test` : Ajout/modification de tests
+- `chore` : Maintenance (dépendances, config)
+
+**Exemples** :
+
+```bash
+git commit -m "feat: add correlation filter for numeric columns"
+git commit -m "fix: menu items not displayed when updated in SwingWorker"
+git commit -m "docs: add complete API documentation"
+git commit -m "test: add unit tests for FilterBuilder"
+git commit -m "refactor: simplify StatisticService with streams"
+```
+
+**Corps du message** (optionnel mais recommandé pour les changements complexes) :
+
+```
+feat: add support for correlation statistics
+
+- Implements Pearson correlation coefficient calculation
+- Adds correlation menu item to column context menu
+- Handles edge cases (constant columns, null values)
+- Includes comprehensive tests
+
+Fixes #42
+```
+
+### 4. Tester localement
+
+```bash
+# Construire et tester
+mvn clean verify
+
+# Exécuter les tests spécifiques
+mvn test -Dtest=StatisticServiceTest
+
+# Lancer l'application
+mvn exec:java
+
+# Vérifier la couverture de code
+mvn jacoco:report
+```
+
+### 5. Pousser et créer une Pull Request
+
+```bash
+# Pusher votre branche
+git push origin feature/description-courte
+
+# Puis créer une PR via GitHub
+```
+
+**Template de PR** :
+
+```markdown
+## Description
+
+Brève description de la feature ou du fix.
+
+## Type de changement
+
+- [ ] Nouvelle fonctionnalité
+- [ ] Correction de bug
+- [ ] Documentation
+- [ ] Refactorisation
+- [ ] Amélioration de performance
+
+## Tests effectués
+
+- [ ] Tests unitaires écrits/modifiés
+- [ ] Tests manuels effectués
+- Décrire les scénarios testés...
+
+## Screenshots (si applicable)
+
+Ajouter des screenshots pour les changements GUI.
+
+## Checklist
+
+- [ ] Mon code suit les conventions de style du projet
+- [ ] J'ai ajouté de la documentation (Javadoc)
+- [ ] Je n'ai pas introduit de regressions
+- [ ] Les tests passent localement
+
+## Lié à
+
+Closes #42
+```
+
+## Tests et qualité
+
+### Structure des tests
+
+```
+test/fr/univrennes/istic/l2gen/application/
+├── geometry/
+│   ├── AbstractShapeTest.java      # Tests de base
+│   ├── PointTest.java
+│   ├── CircleTest.java
+│   └── ...
+├── io/
+│   └── svg/
+│       └── SVGExportTest.java
+├── visustats/
+│   └── ...
+└── application/
+    └── core/
+        ├── FilterTest.java
+        └── StatisticServiceTest.java
+```
+
+### Écrire des tests
+
+**Conventions de test** :
+
+```java
+import org.junit.Test;
+import org.junit.Before;
+import static org.junit.Assert.*;
+
+/**
+ * Tests pour la classe Point.
+ */
+public class PointTest extends AbstractShapeTest<Point> {
+
+    private Point point;
+
+    /**
+     * Initialisation avant chaque test.
+     */
+    @Before
+    public void setUp() {
+        point = new Point(3.0, 4.0);
+    }
+
+    /**
+     * Crée une instance de Point pour les tests.
+     * @return une nouvelle instance de Point
+     */
+    @Override
+    protected Point create() {
+        return new Point(0.0, 0.0);
+    }
+
+    /**
+     * Test de la distance entre deux points.
+     */
+    @Test
+    public void testDistance() {
+        Point other = new Point(6.0, 8.0);
+        double distance = point.distance(other);
+        assertEquals(5.0, distance, 1e-10);  // Avec tolérance
+    }
+
+    /**
+     * Test du calcul de vecteur.
+     */
+    @Test
+    public void testVector() {
+        Point origin = new Point(0.0, 0.0);
+        Point result = point.sub(origin);
+        assertEquals(3.0, result.getX(), 1e-10);
+        assertEquals(4.0, result.getY(), 1e-10);
+    }
+
+    /**
+     * Test d'égalité de points.
+     */
+    @Test
+    public void testEquality() {
+        Point other = new Point(3.0, 4.0);
+        assertTrue(point.equals(other));
+    }
+
+    /**
+     * Test des valeurs limites.
+     */
+    @Test
+    public void testBoundaryValues() {
+        Point zero = new Point(0.0, 0.0);
+        Point huge = new Point(Double.MAX_VALUE, Double.MAX_VALUE);
         // ...
     }
 }
 ```
 
-## Documentation et Javadoc
+**Couverture de code** : Minimum **80%**
 
-### Javadoc de classe
+```bash
+# Générer un rapport de couverture
+mvn jacoco:report
+
+# Voir le résultat
+open target/site/jacoco/index.html
+```
+
+### Exécuter les tests
+
+```bash
+# Tous les tests
+mvn test
+
+# Test spécifique
+mvn test -Dtest=PointTest
+
+# Test avec un pattern
+mvn test -Dtest=*ServiceTest
+
+# Avec verbose output
+mvn test -X
+
+# Arrêter à la première erreur
+mvn test -f
+```
+
+## Documentation
+
+### Javadoc obligatoire
+
+**Classes publiques** :
 
 ```java
 /**
- * Représente un cercle implémentant l'interface IShape.
- * Un cercle est défini par un centre (x, y) et un rayon.
+ * Représentation d'un point en 2D.
  *
- * Les propriétés SVG (style, transformation) sont héritées de AbstractShape.
- *
- * @see AbstractShape
- * @see IShape
- * @see Point
+ * Un point est défini par ses coordonnées (x, y).
+ * Cette classe fournit des opérations vectorielles courantes.
  */
-@SVGTag("circle")
-public final class Circle extends AbstractShape {
-    // ...
-}
+public class Point implements IShape { }
 ```
 
-**Règles** :
-
-- ✅ Première ligne = description courte (une phrase)
-- ✅ Lignes suivantes = détails supplémentaires
-- ✅ Utilisez `@see` pour les références
-- ✅ Mentionnez les invariants (ex: "un rayon >= 0")
-
-### Javadoc de méthode
+**Méthodes publiques** :
 
 ```java
 /**
- * Définit la largeur du trait (stroke-width).
+ * Calcule la distance entre ce point et un autre.
  *
- * @param width la largeur du trait (doit être >= 0)
- * @return cette instance pour enchaînage de méthodes
+ * @param other le point avec lequel calculer la distance
+ * @return la distance euclidienne entre les deux points
+ * @throws NullPointerException si other est null
  */
-public SVGStyle strokeWidth(double width) {
-    if (width < 0) {
-        throw new IllegalArgumentException("Width cannot be negative: " + width);
-    }
-    this.strokeWidth = Optional.of(width);
-    return this;
-}
+public double distance(Point other) { }
 ```
 
-**Règles** :
-
-- ✅ Première ligne = description courte
-- ✅ `@param` pour chaque paramètre
-- ✅ `@return` pour le type retourné (non-void)
-- ✅ `@throws` pour les exceptions
-- ✅ Mentionnez le comportement de chaînage si applicable
-
-### Javadoc de field
+**Champs publics** (si nécessaire) :
 
 ```java
 /**
- * La largeur du trait (stroke-width) en unités SVG.
- * Stockée en tant qu'Optional pour indiquer la présence.
- * Une valeur vide signifie que la propriété n'a pas été définie.
+ * L'index de la colonne active.
  */
-private Optional<Double> strokeWidth = Optional.empty();
+private int columnIndex;
 ```
 
-### Commentaires en ligne
+### Documentation dans le code
 
-```java
-// ✅ Bon : utile et court
-@Override
-public void resize(double px, double py) {
-    // Ignorer le deuxième argument pour un cercle (invariant)
-    this.radius = this.radius * px;
-}
+Ajouter une section "Documentation" à votre PR décrivant :
 
-// ❌ Mauvais : commentaire évident ou trop court
-@Override
-public void resize(double px, double py) {
-    // multiplie le rayon
-    this.radius = this.radius * px;  // += px???
-}
+- Nouvelles classes/méthodes publiques
+- APIs modifiées
+- Changements de comportement
+
+```markdown
+## Documentation
+
+### Nouvelles méthodes
+
+- `Filter.correlation(int col1, int col2)` : Filtre par corrélation entre deux colonnes
+- `StatisticService.computeCorrelation()` : Calcule la corrélation de Pearson
+
+### APIs modifiées
+
+- `TableColumnContextMenu.buildStatsMenu()` : Ajout du menu "Corrélation"
 ```
 
-## Tests unitaires
+## Process de review
 
-### Structure des tests
+### Checklist pour le revieweur
 
-```
-test/fr/univrennes/istic/l2gen/geometry/
-├── PointTest.java
-├── AbstractShapeTest.java
-└── base/
-    ├── CircleTest.java
-    ├── LineTest.java
-    └── RectangleTest.java
-```
+- ✅ Code suit les conventions du projet
+- ✅ Javadoc complète pour l'API publique
+- ✅ Tests passent et couverture > 80%
+- ✅ Pas de regressions
+- ✅ Performance acceptable
+- ✅ Messages de commit clairs
+- ✅ Pas de code mort
+- ✅ Gestion d'erreurs appropriée
 
-**Règles** :
+### Demander des modifications
 
-- ✅ Même structure de packages que `src`
-- ✅ Noms : `OriginalClass` → `OriginalClassTest`
-
-### Exemple de test
-
-```java
-import org.junit.Test;
-import org.junit.Assert.*;
-
-public class CircleTest extends AbstractShapeTest<Circle> {
-
-    @Override
-    public Circle create() {
-        // Crée une instance pour les tests
-        return new Circle(100, 100, 50);
-    }
-
-    @Test
-    public void testCenter() {
-        Circle circle = create();
-        Point center = circle.getCenter();
-
-        assertEquals(100, center.getX(), 0.001);
-        assertEquals(100, center.getY(), 0.001);
-    }
-
-    @Test
-    public void testRadiusValidation() {
-        // Vérifie que rayon négatif lève une exception
-        assertThrows(
-            IllegalArgumentException.class,
-            () -> new Circle(0, 0, -5)
-        );
-    }
-}
-```
-
-**Règles** :
-
-- ✅ Une méthode de test par comportement testé
-- ✅ Noms explicites : `test<Behavior>` (ex: `testRadiusValidation`)
-- ✅ Arrange-Act-Assert (AAA pattern)
-- ✅ Testez les cas d'erreur aussi (exceptions, limites)
-
-### Avant de committer
+Si des modifications sont demandées :
 
 ```bash
-# 1. Vérifier que le projet compile
-# VS Code compile automatiquement, mais vérifiez qu'il y a pas d'erreurs
-
-# 2. Exécuter tous les tests
-# Cliquez sur "Run All Tests" dans VS Code
-# Ou utilisez le terminal (dépend de votre setup)
-
-# 3. Vérifier que tous les tests passent
-# ✅ Pas de tests rouge
-```
-
-## Messages de commit
-
-### Format type
-
-```
-<type>: <description courte et claire>
-
-<détails optionnels (si besoin)>
-```
-
-### Types de commit
-
-| Type       | Utilisation                         | Exemple                                    |
-| ---------- | ----------------------------------- | ------------------------------------------ |
-| `feat`     | Nouvelle fonctionnalité             | `feat: add gradient support to SVG export` |
-| `fix`      | Bugfix                              | `fix: circle rotation should be no-op`     |
-| `refactor` | Refactoring ou amélioration de code | `refactor: simplify Color parsing logic`   |
-| `docs`     | Documentation, commentaires         | `docs: add Javadoc to Point class`         |
-| `test`     | Tests                               | `test: add validation tests for Circle`    |
-
-### Exemples valides
-
-```
-feat: add blur filter support with feGaussianBlur
-```
-
-```
-fix: prevent negative radius in Circle constructor
-```
-
-```
-docs: improve Javadoc for SVGStyle class
-```
-
-### Règles de dénomination
-
-- ✅ **Anglais obligatoire** (même si la documentation est en français)
-- ✅ **Impératif** : "add" et non "added" ou "adds"
-- ✅ **Court** : première ligne ≤ 50 caractères
-- ❌ Pas de points (.) ni d'exclamations (!)
-- ❌ Pas de majuscule au début (sauf Types Java)
-
-## Workflow de contribution
-
-### 1️⃣ Récupérer les derniers changements
-
-```bash
-git pull
-```
-
-### 2️⃣ Créer votre tâche
-
-- Créez une nouvelle classe ou modifiez une existante
-- Respectez les conventions de ce guide
-
-### 3️⃣ Tester votre code
-
-```bash
-# VS Code teste automatiquement à la sauvegarde
-# Mais exécutez aussi manuellement:
-# - Cliquez "Run Tests" sur la classe de test
-# - Ou utilisez Ctrl+Shift+D pour le débogage
-```
-
-### 4️⃣ Formater avant de committer
-
-```bash
-# VS Code formate automatiquement (si "Format On Save" activé)
-# Sinon, manuellement: Shift+Alt+F
-```
-
-### 5️⃣ Committer
-
-```bash
-# Vérifier les changements
-git status
-
-# Ajouter les changements
+# Apporter les modifications
 git add .
+git commit -m "fix review comments"
 
-# Committer avec un message clair
-git commit -m "feat: add circle resize validation"
+# Ou amender le dernier commit
+git add .
+git commit --amend --no-edit
+git push -f origin feature/description-courte
 ```
 
-### 6️⃣ Pousser
+### Fusionner votre PR
+
+Une fois approuvée :
 
 ```bash
-git push
+# Votre PR sera fusionnée via l'interface GitHub
+# (généralement fait par un mainteneur)
+
+# Nettoyer localement
+git checkout main
+git pull upstream main
+git branch -d feature/description-courte
 ```
 
-## Checklist avant de committer
+## Signaler des problèmes
 
-- [ ] Le code **compile** (pas d'erreurs en rouge)
-- [ ] Tous les **tests passent** (verts)
-- [ ] **Javadoc complète** sur classes et méthodes publiques
-- [ ] Pas d'imports inutilisés (VS Code nettoie à la sauvegarde)
-- [ ] **Formatage appliqué** (`Shift+Alt+F`)
-- [ ] **Pas de TODO** hérités (ou commentez pourquoi)
-- [ ] **Noms explicites** (variables, méthodes, classes)
-- [ ] **Validation des inputs** (exceptions si besoin)
-- [ ] **Message de commit clair** en anglais
-- [ ] **Annotations SVG** ajoutées (`@SVGTag`, `@SVGField` si applicable)
+### Avant de signaler
 
-## Ressources utiles
+- ✅ Vérifier que le problème n'existe pas déjà
+- ✅ Tester avec la dernière version
+- ✅ Tester avec une nouvelle branche clean
+- ✅ Vérifier la documentation
+
+### Signaler un bug
+
+Titre clair et concis :
+
+```
+"Le menu du filtre ne s'affiche pas après mise à jour"
+```
+
+**Template** :
+
+```markdown
+## Description
+
+Le menu de filtre n'affiche pas les nouvelles options après que le SwingWorker
+ajoute dynamiquement des éléments au menu.
+
+## Reproduction
+
+1. Ouvrir le fichier CSV avec 1000+ lignes
+2. Clic droit sur colonne → Filter
+3. Attendre que les catégories se chargent
+4. Les nouvelles options ne s'affichent pas
+
+## Comportement observé
+
+- Menu reste vide/incomplet
+- Pas d'erreur dans les logs
+
+## Comportement attendu
+
+- Menu doit afficher les options de filtre après chargement
+
+## Environnement
+
+- OS: Linux
+- Java: JDK 21.0.3
+- Maven: 3.9.0
+- Version Pangol1: main branch
+
+## Logs
+
+[Coller les logs pertinents ici]
+```
+
+### Proposer une amélioration
+
+```markdown
+## Description
+
+Ajouter le calcul de la corrélation de Pearson entre deux colonnes numériques.
+
+## Motivation
+
+Pour analyser la relation linéaire entre deux variables quantitatives.
+
+## Solution proposée
+
+1. Ajouter `StatisticService.computeCorrelation(table, col1, col2)`
+2. Ajouter menu "Corrélation" dans le contexte colonne
+3. Afficher dans un dialogue
+
+## Cas d'usage
+
+Données de ventes : corréler le prix avec les ventes pour voir la relation.
+
+## Alternatives
+
+- Utiliser une tool externe comme RStudio
+- Implémenter directement dans Excel
+
+## Complexité estimée
+
+Moyenne (une journée de développement)
+```
+
+## Ressources
+
+### Liens utiles
+
+- [Java 21 Documentation](https://docs.oracle.com/en/java/javase/21/)
+- [Git Guide](https://git-scm.com/book)
+- [Maven Guide](https://maven.apache.org/guides/)
+- [Swing Tutorial](https://docs.oracle.com/javase/tutorial/uiswing/)
+- [JUnit 4 Documentation](https://junit.org/junit4/)
 
 ### Documentation du projet
 
-- 📚 [DOCUMENTATION.md](docs/DOCUMENTATION.md) - Architecture complète
-- 👥 [MEMBERS.md](docs/MEMBERS.md) - Liste des contributeurs
-- 📋 [TODOS.md](docs/TODOS.md) - Tâches en cours
-- 📖 [README.md](README.md) - Vue d'ensemble
-- 📐 [UML](uml/src.svg) - Diagramme de classes UML (mis à jour régulièrement)
+- [README.md](README.md) - Présentation
+- [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) - Documentation complète
+- [MEMBERS.md](docs/MEMBERS.md) - Équipe
+- [UML Diagrams](uml/) - Diagrammes d'architecture
 
-### Standards et références
+### Outils recommandés
 
-- 📖 [Google Java Style Guide](https://google.github.io/styleguide/javaguide.html)
-- 📖 [Oracle Java Naming Conventions](https://www.oracle.com/java/technologies/javase/codeconventions-135161.html)
-- 📖 [Javadoc Guide](https://www.oracle.com/technical-resources/articles/java/javadoc-tool.html)
-- 📖 [SVG Spec](https://www.w3.org/TR/SVG11/) - Pour le système d'annotations
+**Extension VS Code** :
 
-### Git
+- Extension Pack for Java
+- Maven for Java
+- Code Spell Checker
+- SonarLint (pour la qualité)
 
-- 📘 [Git Cheat Sheet](https://git-scm.com/cheat-sheet)
-- 📘 [VS Code Git Guide](https://code.visualstudio.com/docs/sourcecontrol/quickstart)
-- 📘 [Conventional Commits](https://www.conventionalcommits.org/) - Standard pour les messages
+**Configuration VS Code** (`.vscode/settings.json`) :
+
+```json
+{
+  "java.configuration.runtimes": [
+    {
+      "name": "JavaSE-21",
+      "path": "/path/to/jdk21",
+      "default": true
+    }
+  ],
+  "[java]": {
+    "editor.defaultFormatter": "redhat.java",
+    "editor.formatOnSave": true,
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true
+  }
+}
+```
+
+**Merci pour votre contribution à Pangol1 ! 🚀**
+
+Vous trouverez que ce projet suit des standards de code élevés. Votre respect de ces conventions garantit une base de code maintenable, cohérente et professionnelle.

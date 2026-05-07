@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 SOURCE_DIR = Path("src")
-DOC_DIR = Path("doc")
+DOC_DIR = Path("docs/javadoc")
 CLASSPATH_OUTPUT_FILE = Path("target/classpath.txt")
 
 

@@ -1,804 +1,1136 @@
-# 📚 Documentation du Projet Pangol1
+# Documentation Pangol1
 
-> Guide complet avec explications de chaque module
+## Table des matières
 
-**Table des matières**
+1. [Introduction](#introduction)
+2. [Architecture générale](#architecture-générale)
+3. [Structure du projet](#structure-du-projet)
+4. [Modules principaux](#modules-principaux)
+5. [Installation et configuration](#installation-et-configuration)
+6. [Guide d'utilisation](#guide-dutilisation)
+7. [API et développement](#api-et-développement)
+8. [Contribution](#contribution)
 
-- [Architecture générale](#architecture-générale)
-- [Module: geometry](#module-geometry)
-- [Module SVG](#module-svg)
-- [Module IO](#module-io)
-- [Module Visustats](#module-visustats)
-- [Module Application](#module-application)
-- [Diagramme de dépendances](#diagramme-de-dépendances)
-- [Flux de travail typique](#flux-de-travail-typique)
+---
+
+## Introduction
+
+### Présentation générale
+
+**Pangol1** est une application Java qui permet de **générer des graphiques SVG** à partir de fichiers de données (CSV, Parquet, etc.). L'application offre une interface graphique intuitive pour manipuler, analyser et visualiser des données sous forme de tableaux et de graphiques.
+
+### Caractéristiques principales
+
+- 📊 **Visualisation de données** : Création de graphiques SVG personnalisés
+- 📈 **Statistiques avancées** : Calculs statistiques sur les colonnes (moyenne, médiane, skewness, corrélation, etc.)
+- 🔄 **Filtrage et tri** : Outils puissants pour filtrer et trier les données
+- 🌐 **Support multilingue** : 10 langues supportées (français, anglais, espagnol, russe, chinois, arabe, japonais, portugais, indonésien, turc)
+- 🎨 **Thème clair/sombre** : Interface adaptative avec FlatLaf
+- 📋 **Gestion de tables** : Import/export de données en plusieurs formats
+- 📑 **Génération de rapports** : Export en PDF et HTML
+- 🖥️ **Interface moderne** : Interface utilisateur intuitive et réactive
+
+### Technologies utilisées
+
+- **Java 21** : Langage de programmation principal
+- **Maven** : Gestion des dépendances et construction
+- **Swing** : Framework GUI
+- **DuckDB JDBC** : Base de données en mémoire
+- **FlatLaf** : Look and Feel moderne
+- **Batik** : Transcoding SVG
+- **OpenHTMLToPDF** : Génération de PDF
+- **JUnit 4** : Tests unitaires
+- **JavaFX** : Rendu HTML avancé
+
+---
 
 ## Architecture générale
 
-Le projet est structuré en couches, avec une séparation claire des responsabilités :
+### Modèle MVC
+
+Pangol1 suit le pattern **Modèle-Vue-Contrôleur (MVC)** :
 
 ```
-┌─────────────────────────────────────────────────┐
-│          APPLICATION (vide pour le moment)      │
-│               Desktop UI et un CLI              │
-└────────────────────┬────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────┐
-│    IO => Input Output (SVG/CSV/XML)             │
-│  Sérialisation/désérialisation des formes       │
-└────────────────────┬────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────┐
-│  GEOMETRY (formes, opérations géométriques)    │
-│  - Point, Circle, Rectangle, Polygon, etc.     │
-│  - Transformations (move, rotate, resize)      │
-└────────────────────┬────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────┐
-│   SVG (spécification SVG + annotations)         │
-│  - Attributes (style, transform, path, color)  │
-│  - Animations et visualisations                │
-│  - Interfaces et annotations                   │
-└─────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│         Application (Pangol1)           │
+├─────────────────────────────────────────┤
+│  ┌──────────────────────────────────┐  │
+│  │   GUI (Vue - Swing)              │  │
+│  │  - MainView                      │  │
+│  │  - Panels & Dialogs              │  │
+│  │  - Table & Chart Views           │  │
+│  └──────────────────────────────────┘  │
+│                    ↑ ↓                  │
+│  ┌──────────────────────────────────┐  │
+│  │  GUIController (Contrôleur)      │  │
+│  │  - Gestion des événements        │  │
+│  │  - Orchestration                 │  │
+│  └──────────────────────────────────┘  │
+│                    ↑ ↓                  │
+│  ┌──────────────────────────────────┐  │
+│  │   Core Services (Métier)         │  │
+│  │  - DataTable                     │  │
+│  │  - Filter & Sort                 │  │
+│  │  - Statistics                    │  │
+│  │  - File I/O                      │  │
+│  └──────────────────────────────────┘  │
+└─────────────────────────────────────────┘
 ```
 
-**Règle d'or : Les dépendances vont d'haut en bas UNIQUEMENT.**
+### Architecture en couches
 
-### Conventions de nommage
+1. **Couche Présentation (GUI)**
+   - Composants Swing
+   - Dialogs et Panels
+   - Rendu des tables et graphiques
 
-- **Packages** : `fr.univrennes.istic.l2gen.<module>.<package>`
-- **Classes** : `CamelCase` (ex: `SVGStyle`, `Circle`)
-- **Méthodes/Variables** : `camelCase` (ex: `getWidth()`, `fillColor`)
-- **Annotations** : `@SVGField`, `@SVGTag`, `@SVGPoint`, etc.
+2. **Couche Contrôle (GUIController)**
+   - Gestion des événements
+   - Orchestration des services
+   - Gestion des tâches
 
-**Voir le [guide de contribution](CONTRIBUTING.md)** pour plus de détails sur les conventions de code, les tests et les messages de commit.
+3. **Couche Métier (Services)**
+   - Logique de filtrage et tri
+   - Calculs statistiques
+   - Gestion des données
 
-## Module: geometry
+4. **Couche Données (I/O)**
+   - Import/export CSV, Parquet, SVG
+   - Persistance DuckDB
+   - Sérialisation XML
 
-### Emplacement
+---
+
+## Structure du projet
+
+### Arborescence complète
 
 ```
-src/fr/univrennes/istic/l2gen/geometry/
-├── AbstractShape.java    # Classe abstraite pour toutes les formes
-├── IShape.java          # Interface principale des formes
-├── Point.java           # Point 2D (x, y)
-├── Path.java            # Forme basée sur un chemin SVG
-├── Group.java           # Conteneur de formes (groupe)
-├── base/
-│   ├── Circle.java      # Cercle
-│   ├── Ellipse.java     # Ellipse
-│   ├── Line.java        # Ligne (2 points)
-│   ├── Polygon.java     # Polygone (n points)
-│   ├── PolyLine.java    # Polyligne
-│   ├── Rectangle.java   # Rectangle
-│   ├── Text.java        # Texte
-│   └── Triangle.java    # Triangle
+Pangol1/
+├── src/fr/univrennes/istic/l2gen/application/
+│   ├── Pangol1.java                    # Entrée principale
+│   ├── core/                           # Cœur métier
+│   │   ├── CoreApp.java                # Application abstraite
+│   │   ├── CoreController.java         # Contrôleur abstrait
+│   │   ├── TaskStatus.java             # États des tâches
+│   │   ├── config/                     # Configuration
+│   │   │   ├── Config.java             # Gestion des paramètres
+│   │   │   ├── Lang.java               # Internationalisation
+│   │   │   ├── Log.java                # Logging
+│   │   │   └── Ico.java                # Icônes
+│   │   ├── filter/                     # Système de filtrage
+│   │   │   ├── Filter.java             # API filtres
+│   │   │   ├── FilterBuilder.java      # Constructeur de filtres
+│   │   │   ├── FilterCondition.java    # Conditions
+│   │   │   ├── FilterFunction.java     # Fonctions
+│   │   │   ├── FilterLogic.java        # Logique (AND/OR/NOT)
+│   │   │   ├── FilterOperator.java     # Opérateurs
+│   │   │   └── FilterSort.java         # Tri
+│   │   ├── notebook/                   # Cahier de notes
+│   │   │   ├── NoteBookText.java
+│   │   │   ├── NoteBookChart.java
+│   │   │   ├── NoteBookImage.java
+│   │   │   └── NoteBookValue.java
+│   │   ├── services/                   # Services métier
+│   │   │   ├── FileService.java        # I/O fichiers
+│   │   │   ├── TableService.java       # Gestion des tables
+│   │   │   ├── stats/                  # Services statistiques
+│   │   │   │   ├── StatisticService.java
+│   │   │   │   └── [autres services]
+│   │   │   └── notebook/               # Gestion du cahier
+│   │   │       └── NoteBookService.java
+│   │   └── table/                      # Modèle de données
+│   │       ├── DataTable.java          # Table de données
+│   │       └── DataType.java           # Types de données
+│   ├── gui/                            # Interface utilisateur
+│   │   ├── GUIApp.java                 # Démarrage GUI
+│   │   ├── GUIController.java          # Contrôleur GUI
+│   │   ├── main/                       # Fenêtre principale
+│   │   │   ├── MainView.java
+│   │   │   ├── MainViewMenu.java
+│   │   │   └── SplashScreen.java
+│   │   ├── panels/                     # Panneaux
+│   │   │   ├── table/                  # Panel table
+│   │   │   │   └── view/data/
+│   │   │   │       ├── TableDataView.java
+│   │   │   │       ├── TableColumnContextMenu.java
+│   │   │   │       └── [autres]
+│   │   │   ├── chart/                  # Panel graphiques
+│   │   │   ├── report/                 # Panel rapport
+│   │   │   └── [autres panels]
+│   │   └── dialog/                     # Dialogues
+│   │       ├── input/                  # Dialogues d'entrée
+│   │       │   ├── InputStringDialog.java
+│   │       │   ├── InputIntDialog.java
+│   │       │   ├── InputDoubleDialog.java
+│   │       │   └── [autres]
+│   │       ├── stats/                  # Dialogues stats
+│   │       └── [autres dialogues]
+│   ├── geometry/                       # Géométrie (shapes)
+│   │   ├── IShape.java                 # Interface forme
+│   │   ├── AbstractShape.java          # Forme abstraite
+│   │   ├── Point.java                  # Point 2D
+│   │   ├── Path.java                   # Chemin
+│   │   ├── Group.java                  # Groupe de formes
+│   │   └── base/                       # Formes de base
+│   │       ├── Circle.java
+│   │       ├── Ellipse.java
+│   │       ├── Line.java
+│   │       ├── Rectangle.java
+│   │       ├── Polygon.java
+│   │       ├── PolyLine.java
+│   │       ├── Triangle.java
+│   │       └── Text.java
+│   ├── io/                             # Import/Export
+│   │   ├── svg/                        # SVG I/O
+│   │   │   ├── SVGExport.java
+│   │   │   └── SVGImport.java
+│   │   └── xml/                        # XML I/O
+│   │       ├── model/
+│   │       └── parser/
+│   ├── svg/                            # SVG avancé
+│   │   ├── animations/                 # Animations SVG
+│   │   │   ├── AbstractAnimate.java
+│   │   │   ├── SVGAnimate.java
+│   │   │   ├── SVGAnimateMotion.java
+│   │   │   ├── SVGAnimateTransform.java
+│   │   │   └── [propriétés d'animation]
+│   │   ├── attributes/                 # Attributs SVG
+│   │   │   ├── path/                   # Commandes path
+│   │   │   ├── style/                  # Style
+│   │   │   └── transform/              # Transformations
+│   │   ├── color/                      # Gestion couleurs
+│   │   │   └── Color.java
+│   │   └── interfaces/                 # Interfaces SVG
+│   │       └── ISVGShape.java
+│   └── visustats/                      # Visualisation stats
+│       ├── data/                       # Modèle de données
+│       │   ├── DataGroup.java
+│       │   ├── DataSet.java
+│       │   ├── Label.java
+│       │   └── Value.java
+│       └── view/                       # Vues de visualisation
+│           └── datagroup/
+├── test/                               # Tests unitaires
+│   └── fr/univrennes/istic/l2gen/application/
+│       ├── Pangol1Test.java
+│       ├── geometry/
+│       ├── io/
+│       └── visustats/
+├── resources/                          # Ressources
+│   ├── languages/                      # Fichiers de traduction
+│   │   └── pangol1_*.properties        # 10 langues
+│   ├── icons/                          # Icônes
+│   ├── export/                         # Templates export
+│   │   └── page.html
+│   └── doc/                            # Documentation inline
+├── uml/                                # Diagrammes UML
+│   ├── application.puml
+│   ├── geometry.puml
+│   ├── io.puml
+│   ├── svg.puml
+│   └── visustats.puml
+├── script/                             # Scripts utilitaires
+│   ├── generate_csv.py                 # Génération données de test
+│   ├── generate_jdoc.py                # Génération documentation
+│   ├── generate_puml.py                # Génération UML
+│   └── generate_svg.py                 # Génération SVG
+├── docs/                               # Documentation
+│   ├── DOCUMENTATION.md                # Cette documentation
+│   ├── MEMBERS.md                      # Membres du projet
+│   ├── SPRINT.md                       # Sprints et planification
+│   ├── USERS-STORIES.md                # User stories
+│   └── MANUEL-UTILISATEUR.tex          # Manuel LaTeX
+├── pom.xml                             # Configuration Maven
+└── README.md                           # Fichier README
 ```
 
-### Responsabilité
+---
 
-Définir le **modèle métier** des formes géométriques avec :
+## Modules principaux
 
-- **Formes** : Point, Circle, Rectangle, Triangle, Polygon, Ellipse, PolyLine, Text, Path
-- **Opérations** : move, resize, rotate, copy
-- **Propriétés** : getWidth(), getHeight(), getCenter()
-- **Conteneurs** : Group (liste de formes)
+### 1. Module Core (Cœur métier)
 
-### Classe clé: `IShape` (Interface)
+**Rôle** : Contient la logique métier et les services principaux.
+
+#### Sous-modules
+
+##### Config & Logging
+
+- `Config.java` : Gestion centralisée de la configuration (properties)
+- `Lang.java` : Système d'internationalisation (10 langues)
+- `Log.java` : Logging structuré
+- `Ico.java` : Gestion des icônes
+
+##### Système de filtrage (Filter)
 
 ```java
-public interface IShape extends ISVGShape {
-    // Dimensions
-    double getWidth();      // Largeur de la forme
-    double getHeight();     // Hauteur de la forme
-    Point getCenter();      // Centre géométrique
-
-    // Transformations
-    void move(double dx, double dy);        // Déplacement
-    void resize(double px, double py);      // Mise à l'échelle
-    void rotate(double deg);                // Rotation
-
-    // Autres
-    IShape copy();                  // Copie la forme
-    String getDescription(int indent);  // Description textuelle
-
-    // Propriétés SVG (héritées de ISVGShape)
-    SVGStyle getStyle();            // Couleur, trait, police
-    SVGTransform getTransform();    // Transformations géométriques
-}
+// Exemple d'utilisation
+Filter filter = Filter.sort(columnIndex, ascending);
+Filter rangeFilter = Filter.byRange(columnIndex, min, max);
+Filter categoryFilter = Filter.equals(columnIndex, category);
+table.addFilter(filter);
 ```
 
-### Classe clé: `AbstractShape` (Classe abstraite)
+Classes principales :
+
+- `Filter.java` : Factory et API principale
+- `FilterBuilder.java` : Constructeur fluide de filtres complexes
+- `FilterCondition.java` : Conditions prédicats
+- `FilterLogic.java` : Opérateurs logiques (AND, OR, NOT)
+- `FilterSort.java` : Tri des données
+
+##### Modèle de données (Table)
+
+- `DataTable.java` : Représentation en mémoire des données
+- `DataType.java` : Types supportés (STRING, INTEGER, DOUBLE, DATE, BOOLEAN)
+
+##### Services métier
+
+- `TableService.java` : CRUD sur les tables
+- `FileService.java` : Import/export fichiers
+- `StatisticService.java` : Calculs statistiques (moyenne, médiane, IQR, skewness, corrélation)
+- `NoteBookService.java` : Gestion du cahier de notes
+
+### 2. Module GUI (Interface utilisateur)
+
+**Rôle** : Affichage et interaction utilisateur avec Swing.
+
+#### Structure
+
+```
+GUI
+├── MainView                    # Fenêtre principale
+│   ├── MenuBar                 # Barre de menus
+│   ├── TablePanel              # Affichage table
+│   ├── ChartPanel              # Affichage graphiques
+│   └── ReportPanel             # Affichage rapport
+├── Dialogs                     # Dialogues modaux
+│   ├── Input (String, Int, Double, Date, Select)
+│   └── Stats (Affichage statistiques)
+└── Panels                      # Panneaux réutilisables
+    ├── Table                   # Gestion du tableau
+    ├── Chart                   # Gestion des graphiques
+    └── Report                  # Cahier de notes
+```
+
+#### GUIController
+
+Singleton qui orchestre :
+
+- Événements utilisateur
+- Communication entre panels
+- Gestion des tâches asynchrones
+- Mise à jour de l'interface
+
+### 3. Module Geometry (Géométrie)
+
+**Rôle** : Modèle objet pour les formes géométriques.
+
+Hiérarchie des classes :
+
+```
+IShape (interface)
+ ↑
+AbstractShape (classe abstraite)
+ ├── Point
+ ├── Path
+ ├── Group
+ └── Formes de base
+     ├── Circle
+     ├── Ellipse
+     ├── Line
+     ├── Rectangle
+     ├── Polygon
+     ├── PolyLine
+     ├── Triangle
+     └── Text
+```
+
+Utilisation :
 
 ```java
-public abstract class AbstractShape implements IShape {
-    @SVGField
-    protected final SVGStyle style = new SVGStyle();
-
-    @SVGField
-    protected final SVGTransform transform = new SVGTransform();
-
-    // Implémentations communes
-    // Chaque forme concrète (Circle, Rectangle, etc.) complète cette classe
-}
-```
-
-### Exemple: Créer une forme
-
-```java
-// Créer un rectangle rouge
-Rectangle rect = new Rectangle(0, 0, 100, 50);
-rect.getStyle().fillColor(Color.RED);
-rect.getStyle().strokeColor(Color.BLACK);
-rect.getStyle().strokeWidth(2.0);
-
-// Transformer
-rect.move(10, 20);           // Déplacer
-rect.rotate(45);             // Tourner
-rect.resize(1.5, 1.5);       // Agrandir
-
-// Récupérer propriétés
-Point center = rect.getCenter();
-double width = rect.getWidth();
-String desc = rect.getDescription(0);  // Affichage textuel
-```
-
-### Tests
-
-```
-test/fr/univrennes/istic/l2gen/geometry/
-├── AbstractShapeTest.java   # Classe abstraite pour les tests
-├── PointTest.java           # Tests du Point
-├── GroupTest.java           # Tests du Group
-├── PathTest.java            # Tests du Path
-└── base/
-    ├── CircleTest.java
-    ├── LineTest.java
-    ├── RectangleTest.java
-    └── ...
-```
-
-## Module SVG
-
-### Emplacement
-
-```
-src/fr/univrennes/istic/l2gen/svg/
-├── interfaces/              # Annotations et interfaces clés
-│   ├── ISVGAttribute.java   # Interface pour attributs SVG
-│   ├── ISVGShape.java       # Interface base des éléments SVG
-│   ├── tag/
-│   │   ├── @SVGTag         # Annotation définissant le tag XML
-│   │   └── SVGTagProcessor.java # Pré-processeur pour les tags (Java MATE-INF)
-│   ├── field/
-│   │   ├── @SVGField       # Annotation mappant un champ à un attribut
-│   │   └── SVGField.java
-│   ├── point/
-│   │   ├── @SVGPoint       # Annotation marquant une classe comme point
-│   │   ├── @SVGPointX      # Annotation pour coordonnée X
-│   │   ├── @SVGPointY      # Annotation pour coordonnée Y
-│   │   └── ...
-│   └── content/
-│       ├── @SVGContent     # Annotation pour contenu textuel
-│       └── SVGContentProcessor.java # Pré-processeur pour le contenu (Java MATE-INF)
-├── attributes/
-│   ├── style/
-│   │   └── SVGStyle.java           # Couleur, trait, police
-│   ├── transform/
-│   │   └── SVGTransform.java       # Rotation, translation, scale
-│   ├── path/
-│   │   ├── SVGPath.java            # Chemin SVG
-│   │   ├── ParseCommands.java
-│   │   ├── BoundingBox.java
-│   │   └── commands/               # Commands SVG (Arc, Bezier, etc.)
-│   └── ...
-├── color/
-│   └── Color.java                  # Classe pour gérer les couleurs
-├── animations/
-│   ├── AbstractAnimate.java        # Classe de base des animations
-│   ├── SVGAnimate.java             # Animation d'attribut
-│   ├── SVGAnimateTransform.java    # Animation de transformation
-│   ├── SVGAnimateMotion.java       # Animation de mouvement
-│   └── Animation*.java             # Propriétés d'animation
-└── ...
-```
-
-**Voir le [guide d'annotation](./ANNOTATIONS.md)** pour une explication détaillée du système d'annotations et de son fonctionnement.
-
-**Voir le fonctionnement des [pre-processeurs](https://www.baeldung.com/java-annotation-processing-builder)** pour comprendre comment les annotations sont traitées à la compilation.
-
-### Responsabilité
-
-Fournir **la spécification SVG et les outils d'annotation** :
-
-- **Annotations** : système déclaratif pour mapper Python → XML
-- **Attributs** : style, transform, path, color, etc.
-- **Animations** : animate, animateTransform, animateMotion
-- **Système de sérialisation** : export Java → XML SVG
-
-### Annotations (le cœur du système)
-
-#### `@SVGTag(String value)`
-
-Marque une classe comme élément SVG avec son nom de tag.
-
-```java
-@SVGTag("circle")
-public class Circle extends AbstractShape {
-    // La classe sera exportée en <circle>
-}
-```
-
-#### `@SVGField(String[] value)`
-
-Mappe un champ Java à un attribut SVG.
-
-```java
-@SVGField("cx")          // Simple
-private double centerX;
-
-@SVGField({"x1", "y1"})  // Point en 2 attributs
-private Point start;
-```
-
-#### `@SVGPoint`, `@SVGPointX`, `@SVGPointY`
-
-Marque une classe comme point et ses champs de coordonnées.
-
-```java
-@SVGPoint
-public class Point {
-    @SVGPointX
-    private double x;
-
-    @SVGPointY
-    private double y;
-}
-```
-
-#### `@SVGContent`
-
-Marque un champ comme contenu textuel (au lieu d'attribut).
-
-```java
-@SVGContent
-private String text;  // Export: <text>contenu textuel</text>
-```
-
-### Classe: `SVGStyle` (Attributs visuels)
-
-```java
-SVGStyle style = new SVGStyle();
-
-// Couleurs
-style.fillColor(Color.RED);        // Couleur de remplissage
-style.strokeColor(Color.BLACK);    // Couleur du trait
-
-// Traits
-style.strokeWidth(2.0);            // Épaisseur
-style.strokeDashArray(5, 10, 5);   // Motif en pointillés
-
-// Police
-style.fontSize(14.0);              // Taille
-style.fontFamily("Arial");         // Famille
-style.textAnchor("middle");        // Ancrage du texte
-
-// Export: style="fill:#ff0000;stroke:#000000;stroke-width:2.0;..."
-```
-
-### Classe: `SVGTransform` (Transformations)
-
-```java
-SVGTransform transform = new SVGTransform();
-
-// Transformations (toutes avec chaînage)
-transform.translate(10, 20);       // Déplacer
-transform.scale(2.0, 1.5);         // Mettre à l'échelle
-transform.rotate(45);              // Tourner (sans pivot)
-transform.rotate(45, 100, 100);    // Tourner (avec pivot)
-transform.skew(10, 0);             // Incliner
-
-// Export: transform="translate(10,20) scale(2.0,1.5) rotate(45)..."
-String content = transform.getContent();
-```
-
-### Classe: `Color` (Gestion des couleurs)
-
-```java
-// Constantes
-Color.RED;      // #ff0000
-Color.BLACK;    // #000000
-
-// Création
-Color.hex("#ff0000");           // Depuis hex
-Color.rgb(255, 0, 0);           // Depuis RGB
-Color.rgba(255, 0, 0, 128);     // Depuis RGBA
-Color.random();                 // Aléatoire
-
-// Parsing
-Color.raw("rgb(255,0,0)");      // Parse SVG CSS
-Color.raw("rgba(255,0,0,128)");
-Color.raw("#ff0000");
-```
-
-### Classe: `SVGPath` (Chemins SVG)
-
-```java
-SVGPath path = new SVGPath();
-
-// Ajouter des commandes
-path.moveTo(0, 0);           // M 0 0
-path.lineTo(100, 100);       // L 100 100
-path.curveTo(150, 50, 200, 100);  // C (Bézier cubique)
-path.arc(...);               // A (Arc circulaire)
-path.close();                // Z
-
-// Export: d="M 0 0 L 100 100 C 150 50 200 100 Z"
-```
-
-### Animations
-
-```java
-SVGAnimate animate = new SVGAnimate();
-animate.attributeName("cx");          // Quelle propriété animer
-animate.from("50");                   // Valeur initiale
-animate.to("200");                    // Valeur finale
-animate.duration(2000);               // Durée en ms
-
-// Export: <animate attributeName="cx" from="50" to="200" dur="2s"/>
-```
-
-### 📝 Exemple: Emploi du système d'annotations
-
-```java
-@SVGTag("myCustomShape")
-public class MyShape implements ISVGShape {
-
-    @SVGField("cx")
-    private double centerX;
-
-    @SVGField("cy")
-    private double centerY;
-
-    @SVGField("r")
-    private double radius;
-
-    @SVGField
-    private SVGStyle style;  // Export automatique de l'attribut "style"
-
-    @SVGField
-    private SVGTransform transform;  // Export automatique
-
-    @SVGContent
-    private String label;           // Contenu textuel
-
-    // Getters...
-}
-
-// À l'export, devient:
-// <myCustomShape cx="..." cy="..." r="..." style="..." transform="...">label</myCustomShape>
-```
-
-## Module IO
-
-### Emplacement
-
-```
-src/fr/univrennes/istic/l2gen/io/
-├── svg/
-│   ├── SVGExport.java       # Exporte Java objects → fichier SVG
-│   └── SVGImport.java       # Parse SVG → Java objects
-├── xml/
-│   ├── model/
-│   │   ├── XMLAttribute.java
-│   │   └── XMLTag.java      # Modèle XML générique
-│   └── parser/
-│       ├── XMLParser.java   # Parsing XML
-│       └── XMLParseException.java
-└── csv/
-    ├── model/
-    │   ├── CSVRow.java
-    │   └── CSVTable.java    # Modèle CSV générique
-    └── parser/
-        ├── CSVParser.java   # Parsing CSV
-        └── CSVParseException.java
-```
-
-### Responsabilité
-
-**Sérialisation et désérialisation** :
-
-- **SVG** : export formes Java → XML SVG, import XML SVG → Java
-- **XML** : parser et modèle générique pour manipuler du XML
-- **CSV** : parser et modèle générique pour manipuler du CSV
-
-### Classe: `SVGExport`
-
-Convertit des objets Java (`ISVGShape`) en fichiers SVG.
-
-**Fonctionnement** :
-
-1. Scanne les champs annotés `@SVGField` et `@SVGContent`
-2. Utilise la réflexion pour extraire les valeurs
-3. Crée une structure XML équivalente
-4. Écrit le SVG dans un fichier
-
-```java
-// Export une liste de formes
-List<IShape> shapes = ...;
-SVGExport.export(shapes, "output.svg", 1000, 1000);
-
-// Export une forme unique
-Circle circle = new Circle(0, 0, 50);
-SVGExport.export(circle, "output.svg", 500, 500);
-
-// Résultat SVG généré automatiquement :
-// <svg xmlns="..." width="1000" height="1000">
-//   <circle cx="0" cy="0" r="50" jclass-data="..."/>
-// </svg>
-```
-
-**Détail du processus** :
-
-```java
-// 1. Récupère le tag SVG de la classe
-@SVGTag("circle")
-public class Circle { ... }
-
-// 2. Mappe les champs aux attributs
-@SVGField("cx")
-private double centerX;
-
-// 3. Exporte les ISVGAttribute (style, transform)
-@SVGField
-private SVGStyle style;
-
-// 4. Crée la balise XML équivalente
-<circle cx="100" cy="50" style="stroke:...;fill:...;" transform="..."/>
-```
-
-### Classe: `SVGImport`
-
-Parse un fichier SVG et reconstruit les objets Java.
-
-**Fonctionnement** :
-
-1. Les formes doivent être **enregistrées au préalable** avec `SVGImport.register(Class)`
-2. Parse le XML
-3. Pour chaque balise XML, trouve la classe Java correspondante (via `@SVGTag`)
-4. Instancie l'objet avec le constructeur par défaut
-5. Inject les attributs via réflexion
-
-```java
-// Enregistrement (obligatoire global en startup)
-SVGImport.register(Point.class);
-SVGImport.register(Circle.class);
-SVGImport.register(Line.class);
-// ...
-
-// Chargement
-List<ISVGShape> shapes = SVGImport.load("output.svg");
-```
-
-**Points importants** :
-
-- ✅ Chaque classe doit avoir un **constructeur sans paramères**
-- ✅ Chaque classe doit avoir l'annotation **`@SVGTag("...")`**
-- ❌ Ne réimporte pas les formes non-enregistrées
-
-### Classe: `XMLTag` (Modèle XML)
-
-Classe générique pour manipuler du XML en mémoire.
-
-```java
-XMLTag svg = new XMLTag("svg");
-svg.addAttribute("xmlns", "http://www.w3.org/2000/svg");
-svg.addAttribute("width", "1000");
-svg.addAttribute("height", "1000");
-
-XMLTag circle = new XMLTag("circle");
-circle.addAttribute("cx", "100");
-circle.addAttribute("cy", "50");
-circle.addAttribute("r", "25");
-
-svg.appendChild(circle);
-
-// Export
-System.out.println(svg.toString());
-// <svg xmlns="..." width="1000" height="1000">
-//   <circle cx="100" cy="50" r="25"/>
-// </svg>
-```
-
-### Classe: `CSVParser` (Parsing CSV)
-
-Parse des fichiers ou chaînes CSV.
-
-```java
-CSVParser parser = new CSVParser();
-parser.withDelimiter(',');           // Séparateur (défaut: ,)
-parser.withQuoteChar('"');           // Guillemet (défaut: ")
-parser.withHeaders(true);            // Première ligne = headers
-parser.withTrimWhitespace(true);     // Enlever espaces
-
-// Depuis fichier
-CSVTable table = parser.parse(new File("data.csv"));
-
-// Depuis string
-String csv = "name,age\nAlice,30\nBob,25";
-CSVTable table = parser.parse(csv);
-
-// Accès aux données
-List<CSVRow> rows = table.getRows();
-List<String> headers = table.getHeaders();
-```
-
-## Module Visustats
-
-### Emplacement
-
-```
-src/fr/univrennes/istic/l2gen/visustats/
-├── data/
-│   ├── DataSet.java         # Enregistrement d'une série de données
-│   ├── DataGroup.java       # Groupe de séries
-│   ├── Label.java           # Label associé à une valeur
-│   └── Value.java           # Valeur + couleur pour une donnée
-└── view/
-    ├── datagroup/
-    │   ├── IDataGroupView.java
-    │   └── AbstractDataGroupView.java  # Vue de l'ensemble des séries
-    └── dataset/
-        ├── IDataSetView.java
-        ├── AbstractDataSetView.java
-        ├── BarDataSetView.java      # Vue: diagramme en barres
-        ├── ColumnsDataSetView.java  # Vue: diagramme en colonnes
-        └── PieDataSetView.java      # Vue: diagramme circulaire
-```
-
-### Responsabilité
-
-**Visualisation de données** :
-
-- **Modèle** : `DataSet`, `DataGroup` pour représenter les données
-- **Vues** : `BarDataSetView`, `ColumnsDataSetView`, `PieDataSetView` pour les convertir en formes géométriques
-- Export automatique en SVG via le système d'annotations
-
-### Classe: `DataSet`
-
-Record contenant une série de données.
-
-```java
-DataSet dataset = new DataSet();
-dataset.values().add(new Value(10.0, Color.RED));
-dataset.values().add(new Value(20.0, Color.GREEN));
-dataset.values().add(new Value(15.0, Color.BLUE));
-
-// Statistiques
-double sum = dataset.sum();      // 45.0
-double max = dataset.max();      // 20.0
-double min = dataset.min();      // 10.0
-Color color = dataset.getColor(0);  // RED
-```
-
-### Classe: `BarDataSetView`
-
-Convertit un `DataSet` en diagramme en barres.
-
-```java
-DataSet data = new DataSet(...);
-BarDataSetView barChart = new BarDataSetView(new Point(200, 200));
-barChart.setData(data);
-
-// Cette vue crée automatiquement des formes `IShape` (rectangles)
-// qui peuvent être exportées en SVG
-```
-
-### Workflow typique
-
-```
-CSV (données brutes)
-  ↓
-CSVParser
-  ↓
-DataSet/DataGroup (modèle métier)
-  ↓
-BarDataSetView/PieDataSetView (conversion géométrique)
-  ↓
-List<IShape> (formes géométriques)
-  ↓
-SVGExport
-  ↓
-SVG (fichier final)
-```
-
-## Module Application
-
-### Emplacement
-
-```
-src/fr/univrennes/istic/l2gen/application/
-└── App.java     # Point d'entrée du programme
-# Plus tard : UI desktop & CLI
-```
-
-### Responsabilité
-
-**Démos (pour le moment)** :
-
-### Classe: `App`
-
-```java
-public class App {
-    static {
-        // Enregistrement global (obligatoire au startup)
-        SVGImport.register(Point.class);
-        SVGImport.register(Circle.class);
-        SVGImport.register(Rectangle.class);
-        // ... toutes les formes
-    }
-
-    public static void main(String[] args) throws Exception {
-        // Créer une fractale
-        IShape fractal = new Fractal().draw(
-            new Triangle(...),
-            5  // profondeur
-        );
-
-        // Créer un arrière-plan blanc
-        IShape background = new Rectangle(0, 0, 1000, 1000);
-        background.getStyle().fillColor(Color.WHITE);
-
-        // Exporter en SVG
-        SVGExport.export(
-            List.of(background, fractal),
-            "output/fractal.svg",
-            1000,  // width
-            1000   // height
-        );
-
-        // Réimporter pour validation
-        List<ISVGShape> imported = SVGImport.load("output/fractal.svg");
-    }
-}
-```
-
-## Diagramme de dépendances
-
-```
-SVG (annotations, attributs, animations)
-  ↑
-  │ depends on
-  │
-GEOMETRY (formes, opérations)
-  ↑
-  │ depends on
-  │
-IO (import/export, parsing)
-  ↑
-  │ depends on
-  │
-VISUSTATS (visualisation de données)
-  ↑
-  │ depends on
-  │
-APPLICATION (point d'entrée, démos)
-```
-
-## Flux de travail typique
-
-### 1️⃣ Créer et transformer des formes
-
-```java
-// Géométrie
 Circle circle = new Circle(100, 100, 50);
-circle.getStyle().fillColor(Color.BLUE);
-circle.getStyle().strokeColor(Color.BLACK);
-circle.getStyle().strokeWidth(2.0);
+circle.setFill(new Color(255, 0, 0));
+circle.setStroke(new Color(0, 0, 0), 2);
 
-// Transformation
-circle.move(50, 50);
-circle.rotate(45);
-```
-
-### 2️⃣ Grouper et organiser
-
-```java
 Group group = new Group();
 group.add(circle);
-group.add(rectangle);
-group.add(line);
-
-group.move(100, 100);  // Déplacer toutes les formes
+group.add(new Rectangle(10, 10, 200, 150));
 ```
 
-### 3️⃣ Styliser
+### 4. Module SVG (Vectoriel)
+
+**Rôle** : Gestion avancée du format SVG et animations.
+
+#### Animationsvg
+
+- `SVGAnimate.java` : Animation d'attributs
+- `SVGAnimateMotion.java` : Animation de mouvement
+- `SVGAnimateTransform.java` : Animation de transformation
+
+Propriétés :
+
+- `AnimationDuration.java`
+- `AnimationCount.java`
+- `AnimationFill.java`
+- `AnimationRestart.java`
+- `AnimationTransformType.java`
+
+#### Attributs et Transforms
+
+- `path/` : Commandes de chemin (M, L, C, Q, A, etc.)
+- `style/` : Attributs de style CSS
+- `transform/` : Transformations (translate, rotate, scale, skew)
+
+### 5. Module I/O (Import/Export)
+
+**Rôle** : Lecture et écriture de fichiers.
+
+#### SVG I/O
+
+- `SVGExport.java` : Export données → SVG
+- `SVGImport.java` : Import SVG → objets geometrie
+
+#### XML I/O
+
+- Parsing de fichiers XML
+- Sérialisation de modèles
+
+#### Formats supportés
+
+- CSV (lecture/écriture)
+- Parquet (lecture/écriture)
+- SVG (lecture/écriture)
+- XML (configuration)
+- HTML (export rapport)
+- PDF (export rapport)
+
+### 6. Module VisuStats (Visualisation statistique)
+
+**Rôle** : Modèle pour la visualisation de données statistiques.
+
+Classes de données :
+
+- `DataSet.java` : Ensemble de données
+- `DataGroup.java` : Groupement de datasets
+- `Label.java` : Étiquette
+- `Value.java` : Valeur numérique
+
+Types de visualisation :
+
+- Graphiques en barres
+- Graphiques en courbes
+- Graphiques en points
+- Diagrammes secteurs
+- Histogrammes
+
+---
+
+## Installation et configuration
+
+### Prérequis système
+
+- **Java JDK 21+** : [Télécharger](https://www.oracle.com/java/technologies/javase/jdk21-archive-downloads.html)
+- **Maven 3.8+** : [Télécharger](https://maven.apache.org/download.cgi)
+- **Git** : [Télécharger](https://git-scm.com)
+- **VS Code** (recommandé) avec extensions :
+  - Extension Pack for Java
+  - Maven for Java
+
+### Installation locale
+
+#### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/jules1univ/Pangol1.git
+cd Pangol1
+```
+
+#### 2. Construire le projet
+
+```bash
+# Avec Maven
+mvn clean package
+
+# Ou avec le wrapper Maven (inclus)
+./mvnw clean package
+```
+
+#### 3. Exécuter l'application
+
+```bash
+# Via Maven
+mvn exec:java
+
+# Via JAR construit
+java -jar target/Pangol1-1.0-SNAPSHOT.jar
+
+# En développement (VS Code)
+# Utiliser la commande "Run" depuis le terminal ou les raccourcis Java
+```
+
+### Configuration
+
+#### Fichiers de configuration
+
+**`config.properties`** (dans le dossier utilisateur ou ressources)
+
+```properties
+# Apparence
+settings.appearance.use_flatlaf=true
+settings.appearance.auto_start=18
+settings.appearance.theme=LIGHT
+
+# Langue (locale ISO 639-1)
+settings.general.language=fr
+
+# Table
+settings.table.manual_typing=true
+settings.table.auto_resize=false
+
+# Export
+settings.export.format=SVG
+settings.export.quality=HIGH
+
+# Performances
+settings.performance.max_rows=100000
+settings.performance.cache_enabled=true
+```
+
+#### Fichiers de langue
+
+Les fichiers `.properties` sont dans `src/resources/languages/` :
+
+```
+pangol1_fr.properties    # Français
+pangol1_en.properties    # Anglais
+pangol1_es.properties    # Espagnol
+pangol1_de.properties    # Allemand
+pangol1_it.properties    # Italien
+pangol1_zh.properties    # Chinois
+pangol1_ja.properties    # Japonais
+pangol1_ru.properties    # Russe
+pangol1_ar.properties    # Arabe
+pangol1_pt.properties    # Portugais
+pangol1_id.properties    # Indonésien
+pangol1_tr.properties    # Turc
+```
+
+Format des clés i18n :
+
+```properties
+# Format: categorie.sous.categorie.cle=Valeur
+menu.file.open=Ouvrir...
+menu.file.save=Enregistrer
+dialog.confirm.title=Confirmation
+table.type.string=Texte
+table.type.integer=Entier
+error.file_not_found=Fichier non trouvé
+```
+
+---
+
+## Guide d'utilisation
+
+### 1. Démarrage et interface principale
+
+À l'ouverture de l'application :
+
+1. Un écran de démarrage (SplashScreen) s'affiche
+2. La configuration est chargée (thème, langue)
+3. La fenêtre principale s'ouvre avec 3 panneaux :
+   - **Panel Table** : Affichage des données
+   - **Panel Graphique** : Visualisation graphique
+   - **Panel Rapport** : Cahier de notes
+
+### 2. Importer des données
+
+#### Via le menu File → Import
+
+1. Sélectionner le fichier source (CSV, Parquet, XLS, etc.)
+2. Configurer l'import :
+   - Séparateur (,, ;, TAB, etc.)
+   - Encodage (UTF-8, ISO-8859-1, etc.)
+   - Headers (première ligne = noms colonnes ?)
+3. Cliquer "Import"
+
+#### Formats supportés
+
+| Format  | Lecteur            | Limites          |
+| ------- | ------------------ | ---------------- |
+| CSV     | Apache Commons CSV | Texte délimité   |
+| Parquet | Apache Parquet     | Binaire columnar |
+| Excel   | Apache POI         | .xls, .xlsx      |
+| JSON    | Jackson            | Tableaux plats   |
+| XML     | DOM Parser         | Tables XML       |
+
+### 3. Manipuler le tableau
+
+#### Trier une colonne
+
+1. Clic droit sur en-tête de colonne
+2. **Sort → Ascending** ou **Descending**
+
+#### Filtrer les données
+
+1. Clic droit sur en-tête
+2. **Filter** → Choisir un type de filtre :
+   - **Top N** : Les N premiers éléments
+   - **Bottom N** : Les N derniers éléments
+   - **Range** : Plage de valeurs
+   - **Empty** : Afficher les lignes vides
+   - **Non-empty** : Masquer les lignes vides
+   - **By Category** : Filtrer par catégorie (menu ou saisie)
+   - **By Value** : Filtrer par texte (recherche)
+
+#### Types de filtre par type de données
+
+| Type    | Filtres disponibles                                  |
+| ------- | ---------------------------------------------------- |
+| STRING  | Top N, Bottom N, Range (longueur), Categories, Value |
+| INTEGER | Top N, Bottom N, Range (valeurs)                     |
+| DOUBLE  | Top N, Bottom N, Range (valeurs)                     |
+| DATE    | Top N, Bottom N, Range (dates)                       |
+| BOOLEAN | Categories                                           |
+
+### 4. Statistiques
+
+Clic droit sur en-tête → **Stats** :
+
+| Statistique               | Types applicables          |
+| ------------------------- | -------------------------- |
+| Résumé                    | Tous                       |
+| Taux de null              | Tous                       |
+| Ratio de cardinalité      | Tous                       |
+| Écart interquartile (IQR) | Numérique                  |
+| Asymétrie (Skewness)      | Numérique                  |
+| Coefficient de variation  | Numérique                  |
+| Corrélation               | Numérique (avec une autre) |
+
+### 5. Créer un graphique
+
+1. Accéder au **Panel Graphique**
+2. Sélectionner le type de graphique :
+   - Barres
+   - Courbes
+   - Points/Scatter
+   - Secteurs (Pie)
+   - Histogramme
+3. Configurer :
+   - Colonnes X et Y
+   - Couleurs
+   - Titre et étiquettes
+4. Générer l'aperçu
+5. Exporter en SVG/PNG
+
+### 6. Générer des rapports
+
+1. Accéder au **Panel Rapport**
+2. Ajouter du contenu :
+   - **Texte** : Annotations libres
+   - **Graphiques** : Graphiques générés
+   - **Tables** : Exports de tableaux
+   - **Images** : Images SVG/PNG
+   - **Valeurs** : Résultats statistiques
+3. Organiser le rapport
+4. Exporter :
+   - **HTML** : Aperçu interactif
+   - **PDF** : Document statique
+
+### 7. Changer de langue
+
+**Menu Settings → Language** :
+
+- Français
+- English
+- Español
+- Deutsch
+- Italiano
+- 中文 (Chinois)
+- 日本語 (Japonais)
+- Русский (Russe)
+- العربية (Arabe)
+- Português
+
+### 8. Changer le thème
+
+**Menu Settings → Appearance** :
+
+- **Light** : Thème clair
+- **Dark** : Thème sombre (après 18h par défaut)
+- **Auto** : Bascule automatique selon l'heure
+
+---
+
+## API et développement
+
+### Architecture des Services
+
+#### TableService
 
 ```java
-SVGStyle style = shape.getStyle();
-style.fillColor(Color.RED);          // Remplissage
-style.strokeColor(Color.BLACK);      // Contour
-style.strokeWidth(2.0);              // Épaisseur
-style.strokeDashArray(5, 10);        // Pointillés
-style.fontSize(14.0);                // Police
+public class TableService {
+    // Import/Export
+    public static DataTable importCSV(File file, char separator);
+    public static void exportCSV(DataTable table, File file);
+
+    // Filtrage
+    public static DataTable applyFilter(DataTable table, Filter filter);
+    public static List<Filter> getActiveFilters(DataTable table);
+
+    // Manipulation
+    public static void addColumn(DataTable table, String name, DataType type);
+    public static void removeColumn(DataTable table, int columnIndex);
+    public static void renameColumn(DataTable table, int columnIndex, String newName);
+}
 ```
 
-### 4️⃣ Animer (optionnel)
+#### StatisticService
 
 ```java
-// (Nécessite d'ajouter la forme à l'export avec children)
-SVGAnimate animate = new SVGAnimate();
-animate.attributeName("cx");
-animate.from("0");
-animate.to("100");
-animate.duration(2000);
+public class StatisticService {
+    // Statistiques descriptives
+    public static String computeSummary(DataTable table, int columnIndex);
+    public static OptionalDouble computeNullRate(DataTable table, int columnIndex);
+    public static OptionalDouble computeCardinalityRatio(DataTable table, int columnIndex);
+
+    // Statistiques numériques
+    public static OptionalDouble computeInterquartileRange(DataTable table, int columnIndex);
+    public static OptionalDouble computeSkewness(DataTable table, int columnIndex);
+    public static OptionalDouble computeCoefficientOfVariation(DataTable table, int columnIndex);
+
+    // Analyse multivariée
+    public static OptionalDouble computeCorrelation(DataTable table, int col1, int col2);
+
+    // Catégories
+    public static boolean hasColumnCategories(DataTable table, int columnIndex);
+    public static List<String> getColumnCategories(DataTable table, int columnIndex);
+}
 ```
 
-### 5️⃣ Exporter en SVG
+#### Filter API
 
 ```java
-List<IShape> shapes = List.of(background, circle, group);
-SVGExport.export(shapes, "output.svg", 1000, 1000);
+// Création de filtres
+Filter topN = Filter.topN(columnIndex, n);
+Filter bottomN = Filter.bottomN(columnIndex, n);
+Filter range = Filter.byRange(columnIndex, min, max);
+Filter equals = Filter.equals(columnIndex, value);
+Filter search = Filter.search(columnIndex, term);
+Filter sort = Filter.sort(columnIndex, ascending);
+
+// Filtres vides
+Filter empty = Filter.showEmpty(columnIndex);
+Filter nonEmpty = Filter.hideEmpty(columnIndex);
+
+// Composition de filtres (via FilterBuilder)
+Filter complex = new FilterBuilder()
+    .and(Filter.sort(0, true))
+    .and(Filter.byRange(1, 10, 100))
+    .or(Filter.equals(2, "categorie"))
+    .build();
 ```
 
-### 6️⃣ Réimporter (optionnel, pour validation)
+### Modèle de données
+
+#### DataTable
 
 ```java
-List<ISVGShape> imported = SVGImport.load("output.svg");
+public class DataTable {
+    // Navigation
+    public int getRowCount();
+    public int getColumnCount();
+    public String getColumnName(int columnIndex);
+    public DataType getColumnType(int columnIndex);
+
+    // Accès
+    public Object getValue(int rowIndex, int columnIndex);
+    public List<Object> getRow(int rowIndex);
+    public List<Object> getColumn(int columnIndex);
+
+    // Modification
+    public void setValue(int rowIndex, int columnIndex, Object value);
+    public void setColumnType(int columnIndex, DataType newType);
+
+    // Filtrage
+    public void addFilter(Filter filter);
+    public void clearFilters();
+    public void clearColumnFilter(int columnIndex);
+}
 ```
 
-## Points importants
-
-### ✅ Do's
-
-- **Utiliser les annotations** : `@SVGTag`, `@SVGField` pour automatiser l'export
-- **Chaîner les méthodes** : `style.fillColor(...).strokeWidth(...).fontSize(...)`
-- **Enregistrer les formes** : `SVGImport.register(MyShape.class)` en startup
-- **Documenter le code** : ajouter des Javadoc et commentaires
-- **Tester** : ajouter des tests unitaires avec JUnit
-
-### ❌ Don'ts
-
-- **Ne pas modifier l'importateur directement** : utiliser le système de réflexion
-- **Ne pas exporter de formes non-annotées** : ajouter `@SVGTag` et `@SVGField`
-- **Ne pas oublier les constructeurs vides** : obligatoire pour l'import
-- **Ne pas utiliser de chemins absolus** : utiliser des chemins relatifs
-- **Ne pas committer du code non-formaté** : utiliser le formatage automatique
-
-## Exemple complet
+#### DataType
 
 ```java
-// 1. Créer des formes
-Rectangle background = new Rectangle(0, 0, 500, 500);
-background.getStyle().fillColor(Color.WHITE);
+public enum DataType {
+    STRING,        // Texte
+    INTEGER,       // Nombres entiers
+    DOUBLE,        // Nombres décimaux
+    DATE,          // Dates (java.sql.Timestamp)
+    BOOLEAN;       // Booléens
 
-Circle circle = new Circle(250, 250, 100);
-circle.getStyle().fillColor(Color.RED);
-circle.getStyle().strokeColor(Color.BLACK);
-circle.getStyle().strokeWidth(2.0);
-
-Text label = new Text("Hello World");
-label.getStyle().fontSize(20.0);
-label.getStyle().fillColor(Color.BLACK);
-
-// 2. Grouper
-Group group = new Group();
-group.add(circle);
-group.add(label);
-
-// 3. Exporter
-SVGExport.export(
-    List.of(background, group),
-    "output/example.svg",
-    500, 500
-);
-
-// 4. Réimporter
-List<ISVGShape> shapes = SVGImport.load("output/example.svg");
+    public boolean isNumeric();
+    public boolean isCategorical();
+    public String getDisplayName();
+}
 ```
+
+### Extension de l'application
+
+#### Créer un nouveau type de filtre
+
+1. Créer une classe qui implémente `FilterCondition` :
+
+```java
+public class MyCustomFilter implements FilterCondition {
+    @Override
+    public boolean evaluate(Object value) {
+        // Logique du filtre
+        return true;
+    }
+}
+```
+
+2. Ajouter la factory dans `Filter.java` :
+
+```java
+public static Filter custom(int columnIndex, FilterCondition condition) {
+    return new Filter(columnIndex, condition);
+}
+```
+
+#### Créer un nouveau type de graphique
+
+1. Créer une classe dans `visustats/view/` :
+
+```java
+public class MyChartView extends AbstractChartView {
+    public MyChartView(DataSet dataSet) {
+        super(dataSet);
+    }
+
+    @Override
+    protected Component render() {
+        // Rendu du graphique
+        return new JPanel();
+    }
+}
+```
+
+2. Enregistrer dans le panel graphique :
+
+```java
+chartTypeCombo.addItem(new ChartType("My Chart", MyChartView.class));
+```
+
+#### Ajouter une nouvelle statistique
+
+1. Ajouter la méthode dans `StatisticService` :
+
+```java
+public static OptionalDouble computeMyStatistic(DataTable table, int columnIndex) {
+    // Calcul
+    return OptionalDouble.of(result);
+}
+```
+
+2. Ajouter l'option dans le menu contextuel :
+
+```java
+JMenuItem myStatItem = new JMenuItem("Ma statistique");
+myStatItem.addActionListener(e -> {
+    OptionalDouble result = StatisticService.computeMyStatistic(table, tableIndex);
+    // Affichage du résultat
+});
+stats.add(myStatItem);
+```
+
+### Logging et débogage
+
+#### Configuration du logging
+
+`Log.java` fournit des méthodes statiques :
+
+```java
+Log.info("Message d'information");
+Log.warn("Message d'avertissement");
+Log.error("Message d'erreur");
+Log.debug("Message de débogage");
+```
+
+Niveaux de log :
+
+- `DEBUG` : Informations détaillées
+- `INFO` : Informations générales
+- `WARN` : Avertissements
+- `ERROR` : Erreurs
+
+### Tests unitaires
+
+Localisation : `test/fr/univrennes/istic/l2gen/application/`
+
+Exécution :
+
+```bash
+# Tous les tests
+mvn test
+
+# Test spécifique
+mvn test -Dtest=PointTest
+
+# Avec couverture de code
+mvn test jacoco:report
+```
+
+Exemple de test :
+
+```java
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class PointTest {
+    @Test
+    public void testDistance() {
+        Point p1 = new Point(0, 0);
+        Point p2 = new Point(3, 4);
+        assertEquals(5.0, p1.distance(p2), 0.001);
+    }
+}
+```
+
+---
+
+## Contribution
+
+### Environnement de développement
+
+#### Démarrage
+
+1. Fork et cloner le repository
+2. Créer une branche feature : `git checkout -b feature/ma-feature`
+3. Configurer VS Code :
+   - Installer les extensions Java
+   - Configurer le JDK 21
+   - Importer le projet Maven
+
+#### Conventions de code
+
+**Nommage**
+
+- Classes : `PascalCase` (ex: `TableDataView`)
+- Méthodes : `camelCase` (ex: `addFilter()`)
+- Constantes : `UPPER_SNAKE_CASE` (ex: `MAX_ROWS`)
+- Variables : `camelCase` (ex: `columnIndex`)
+
+**Format**
+
+- Indentation : 4 espaces
+- Largeur max : 120 caractères
+- Encodage : UTF-8
+
+**Documentation**
+
+```java
+/**
+ * Description brève de la méthode.
+ *
+ * Description détaillée si nécessaire.
+ *
+ * @param param1 Description du paramètre
+ * @return Description du retour
+ * @throws Exception Description de l'exception
+ */
+public void maMethode(String param1) throws Exception {
+    // Implémentation
+}
+```
+
+### Workflow de contribution
+
+1. **Fork** le repository
+2. **Clone** votre fork localement
+3. **Créer une branche** : `git checkout -b feature/description`
+4. **Développer** et tester localement
+5. **Commit** avec messages explicites :
+   ```bash
+   git commit -m "feat: ajout de la fonctionnalité X"
+   git commit -m "fix: correction du bug Y"
+   git commit -m "refactor: refactorisation du module Z"
+   ```
+6. **Push** vers votre fork
+7. **Créer une Pull Request** sur le repo principal
+8. **Répondre** aux revues de code
+
+### Process de review
+
+Les Pull Requests sont revues selon :
+
+- ✅ Tests unitaires passants
+- ✅ Couverture de code > 80%
+- ✅ Respect des conventions
+- ✅ Documentation à jour
+- ✅ Performance acceptable
+
+### Signaler des bugs
+
+Utiliser le template issue GitHub :
+
+```markdown
+## Description
+
+Décrire le bug clairement.
+
+## Reproduction
+
+Étapes pour reproduire le problème :
+
+1. ...
+2. ...
+3. ...
+
+## Comportement observé
+
+...
+
+## Comportement attendu
+
+...
+
+## Environnement
+
+- OS : Windows/Linux/macOS
+- Java : JDK 21
+- Version : v1.0
+```
+
+### Proposer des améliorations
+
+Créer une issue avec le label `enhancement` :
+
+```markdown
+## Titre
+
+Une description claire de l'amélioration.
+
+## Motivation
+
+Pourquoi cette amélioration est-elle nécessaire ?
+
+## Solution proposée
+
+Comment implémenter cette amélioration ?
+
+## Cas d'usage
+
+Exemples concrets d'utilisation.
+```
+
+---
+
+## Dépannage
+
+### Problèmes courants
+
+#### L'application ne démarre pas
+
+**Cause possible** : JDK non configuré ou version incorrecte
+
+**Solution** :
+
+```bash
+# Vérifier la version Java
+java --version
+# Doit afficher : Java 21.x
+
+# Configurer JAVA_HOME
+export JAVA_HOME=/path/to/jdk21
+```
+
+#### Interface GUI défaillante
+
+**Cause possible** : FlatLaf non initialisé
+
+**Solution** :
+
+```bash
+# Vérifier dans les logs
+mvn exec:java -X | grep -i flatlaf
+
+# Réinstaller les dépendances
+mvn clean dependency:resolve
+```
+
+#### Erreurs d'import/export
+
+**Cause possible** : Format de fichier non supporté
+
+**Solution** :
+
+- Vérifier le format du fichier
+- Vérifier les droits d'accès au fichier
+- Consulter les logs dans `File → View Logs`
+
+#### Performances lentes
+
+**Cause possible** : Grande quantité de données
+
+**Solutions** :
+
+- Augmenter la mémoire JVM : `java -Xmx4G -jar Pangol1.jar`
+- Filtrer les données avant d'appliquer des statistiques
+- Activer le cache : `settings.performance.cache_enabled=true`
+
+---
 
 ## Ressources supplémentaires
 
-- 📖 [RFC SVG 1.1](https://www.w3.org/TR/SVG11/)
-- 📖 [MDN SVG Reference](https://developer.mozilla.org/en-US/docs/Web/SVG)
-- 📖 [SVG Paths](https://www.w3schools.com/graphics/svg_path.asp)
+### Documentation externe
+
+- [Java 21 Documentation](https://docs.oracle.com/en/java/javase/21/)
+- [Maven Guide](https://maven.apache.org/guides/)
+- [Swing Tutorial](https://docs.oracle.com/javase/tutorial/uiswing/)
+- [SVG Specification](https://www.w3.org/TR/SVG2/)
+- [DuckDB Documentation](https://duckdb.org/docs/)
+
+### Fichiers de projet
+
+- [README.md](../README.md) : Présentation générale
+- [CONTRIBUTING.md](../CONTRIBUTING.md) : Guide de contribution
+- [MEMBERS.md](MEMBERS.md) : Membres du projet
+- [USERS-STORIES.md](USERS-STORIES.md) : User stories
+- [SPRINT.md](SPRINT.md) : Planification des sprints
+- [MANUEL-UTILISATEUR.tex](MANUEL-UTILISATEUR.tex) : Manuel LaTeX
+
+### Diagrammes UML
+
+- [application.puml](../uml/application.puml)
+- [geometry.puml](../uml/geometry.puml)
+- [io.puml](../uml/io.puml)
+- [svg.puml](../uml/svg.puml)
+- [visustats.puml](../uml/visustats.puml)
+
+### Scripts utilitaires
+
+- `script/generate_csv.py` : Générer des données de test
+- `script/generate_jdoc.py` : Générer la documentation Javadoc
+- `script/generate_puml.py` : Générer les diagrammes UML
+- `script/generate_svg.py` : Générer des graphiques SVG
+
+---
+
+## Contact et support
+
+Pour toute question ou demande d'assistance :
+
+- 📧 **Email** : [contact@pangol1.fr](mailto:contact@pangol1.fr)
+- 🐛 **Issues** : [GitHub Issues](https://github.com/jules1univ/Pangol1/issues)
+- 💬 **Discussions** : [GitHub Discussions](https://github.com/jules1univ/Pangol1/discussions)
+- 📝 **Wiki** : [Wiki du projet](https://github.com/jules1univ/Pangol1/wiki)
+
+---
+
+**Dernière mise à jour** : 7 mai 2026
+**Version** : 1.0-SNAPSHOT
+**Auteurs** : [Voir MEMBERS.md](MEMBERS.md)
+**Licence** : MIT
