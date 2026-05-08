@@ -28,7 +28,7 @@ import fr.univrennes.istic.l2gen.application.core.config.Lang;
 import fr.univrennes.istic.l2gen.application.core.services.export.ExportService;
 import fr.univrennes.istic.l2gen.application.core.services.export.ExportTheme;
 import fr.univrennes.istic.l2gen.application.gui.GUIController;
-
+import fr.univrennes.istic.l2gen.application.gui.dialog.DialogBase;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
@@ -36,14 +36,11 @@ import javafx.scene.web.WebView;
 
 public final class ExportDialog extends JDialog {
 
-    private static final int DIALOG_WIDTH = 840;
-    private static final int DIALOG_HEIGHT = 620;
-
     private final JComboBox<ExportFormat> formatBox = new JComboBox<>(ExportFormat.values());
     private final JComboBox<ExportTheme> themeBox = new JComboBox<>(ExportTheme.values());
     private final JTextField titleField = new JTextField(30);
     private final JCheckBox includeTitleBox = new JCheckBox(Lang.get("report.export.include_title"), true);
-    private final JCheckBox openAfterExportBox = new JCheckBox(Lang.get("report.export.open_after"), false);
+    private final JCheckBox openAfterExportBox = new JCheckBox(Lang.get("report.export.open_after"), true);
 
     private final JFXPanel previewPanel = new JFXPanel();
     private WebView webView;
@@ -51,11 +48,14 @@ public final class ExportDialog extends JDialog {
     private final JButton exportButton = new JButton(Lang.get("report.export.action"));
     private final JButton cancelButton = new JButton(Lang.get("report.export.cancel"));
 
-    public ExportDialog(Frame parentFrame) {
-        super(parentFrame, Lang.get("report.export.title"), true);
-        setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setMinimumSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
-        setLocationRelativeTo(parentFrame);
+    public ExportDialog(Frame parent) {
+        super(parent, Lang.get("report.export.title"), true);
+
+        setSize(DialogBase.WIDTH, DialogBase.HEIGHT);
+        setMinimumSize(new Dimension(DialogBase.WIDTH, DialogBase.HEIGHT));
+        setLocationRelativeTo(parent);
+        setResizable(false);
+
         build();
     }
 

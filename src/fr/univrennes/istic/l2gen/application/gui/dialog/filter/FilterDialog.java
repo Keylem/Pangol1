@@ -13,6 +13,7 @@ import fr.univrennes.istic.l2gen.application.core.filter.FilterOperator;
 import fr.univrennes.istic.l2gen.application.core.services.stats.StatisticService;
 import fr.univrennes.istic.l2gen.application.core.table.DataTable;
 import fr.univrennes.istic.l2gen.application.core.table.DataType;
+import fr.univrennes.istic.l2gen.application.gui.dialog.DialogBase;
 
 import java.awt.*;
 import java.sql.Timestamp;
@@ -76,8 +77,11 @@ public final class FilterDialog extends JDialog {
         this.columnNames = table.getColumnNames();
         build();
         pack();
-        setMinimumSize(new Dimension(520, 480));
+
+        setSize(DialogBase.WIDTH, DialogBase.HEIGHT);
+        setMinimumSize(new Dimension(DialogBase.WIDTH, DialogBase.HEIGHT));
         setLocationRelativeTo(parent);
+        setResizable(true);
     }
 
     private void build() {

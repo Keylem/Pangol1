@@ -36,11 +36,9 @@ import fr.univrennes.istic.l2gen.application.core.services.TableService;
 import fr.univrennes.istic.l2gen.application.core.table.DataTable;
 import fr.univrennes.istic.l2gen.application.core.table.DataType;
 import fr.univrennes.istic.l2gen.application.gui.GUIController;
+import fr.univrennes.istic.l2gen.application.gui.dialog.DialogBase;
 
 public final class SubtableDialog extends JDialog {
-
-    private static final int DIALOG_WIDTH = 560;
-    private static final int DIALOG_HEIGHT = 520;
 
     private final DataTable table;
 
@@ -58,7 +56,7 @@ public final class SubtableDialog extends JDialog {
         super(parent, Lang.get("subtable.title"), true);
         this.table = table;
         build();
-        setMinimumSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+        setMinimumSize(new Dimension((int) (DialogBase.WIDTH * 0.7), DialogBase.HEIGHT));
         pack();
         setLocationRelativeTo(parent);
     }

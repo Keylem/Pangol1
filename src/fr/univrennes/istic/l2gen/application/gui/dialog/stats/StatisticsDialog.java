@@ -3,6 +3,7 @@ package fr.univrennes.istic.l2gen.application.gui.dialog.stats;
 import javax.swing.*;
 
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
+import fr.univrennes.istic.l2gen.application.gui.dialog.DialogBase;
 
 import java.awt.*;
 
@@ -11,12 +12,12 @@ public class StatisticsDialog extends JDialog {
     private final String content;
     private boolean addedToNotebook = false;
 
-    public StatisticsDialog(Frame parentFrame, String title, String content) {
-        super(parentFrame, title, true);
+    public StatisticsDialog(Frame parent, String title, String content) {
+        super(parent, title, true);
         this.content = content;
         build();
         pack();
-        setLocationRelativeTo(parentFrame);
+        setLocationRelativeTo(parent);
     }
 
     private void build() {
@@ -31,7 +32,7 @@ public class StatisticsDialog extends JDialog {
         textArea.setFocusable(false);
 
         JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(400, 300));
+        scrollPane.setPreferredSize(new Dimension((int) (DialogBase.WIDTH * 0.6), (int) (DialogBase.HEIGHT * 0.5)));
         rootPanel.add(scrollPane, BorderLayout.CENTER);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 5));

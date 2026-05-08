@@ -25,6 +25,7 @@ import javax.swing.Box;
 
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
 import fr.univrennes.istic.l2gen.application.gui.GUIController;
+import fr.univrennes.istic.l2gen.application.gui.dialog.DialogBase;
 import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.AdvancedSettingsPanel;
 import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.AppearanceSettingsPanel;
 import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.GeneralSettingsPanel;
@@ -32,9 +33,6 @@ import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.Shortcuts
 import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.TableSettingsPanel;
 
 public final class SettingsDialog extends JDialog {
-
-    private static final int DIALOG_WIDTH = 780;
-    private static final int DIALOG_HEIGHT = 540;
 
     private static final String TAB_GENERAL = "general";
     private static final String TAB_TABLE = "table";
@@ -48,11 +46,12 @@ public final class SettingsDialog extends JDialog {
 
     private JPanel tabBarPanel;
 
-    public SettingsDialog(Frame parentFrame) {
-        super(parentFrame, Lang.get("settings.title"), true);
-        setSize(DIALOG_WIDTH, DIALOG_HEIGHT);
-        setMinimumSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
-        setLocationRelativeTo(parentFrame);
+    public SettingsDialog(Frame parent) {
+        super(parent, Lang.get("settings.title"), true);
+
+        setSize(DialogBase.WIDTH, DialogBase.HEIGHT);
+        setMinimumSize(new Dimension(DialogBase.WIDTH, DialogBase.HEIGHT));
+        setLocationRelativeTo(parent);
         setResizable(false);
 
         JPanel rootPanel = new JPanel(new BorderLayout());
