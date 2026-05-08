@@ -14,7 +14,6 @@ import javax.swing.SwingWorker;
 import fr.univrennes.istic.l2gen.application.core.TaskStatus;
 import fr.univrennes.istic.l2gen.application.core.config.Config;
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
-import fr.univrennes.istic.l2gen.application.core.config.Log;
 import fr.univrennes.istic.l2gen.application.core.filter.Filter;
 import fr.univrennes.istic.l2gen.application.core.notebook.NoteBookText;
 import fr.univrennes.istic.l2gen.application.core.services.notebook.NoteBookService;
