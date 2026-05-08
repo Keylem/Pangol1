@@ -15,6 +15,11 @@ import fr.univrennes.istic.l2gen.application.gui.dialog.settings.SettingsSection
 
 public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
 
+        public static final int THEME_LIGHT = 0;
+        public static final int THEME_DARK = 1;
+        public static final int THEME_SYSTEM = 2;
+        public static final int THEME_AUTO = 3;
+
         private final JComboBox<String> themeComboBox;
         private final JSlider themeStartHourSlider;
         private final JSlider themeEndHourSlider;
@@ -40,6 +45,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 themeStartHourSlider.setPaintLabels(true);
                 themeStartHourSlider.setSnapToTicks(true);
                 themeStartHourSlider.setValue(Config.getInt("settings.appearance.auto_start", 18));
+                themeStartHourSlider.setEnabled(themeComboBox.getSelectedIndex() == AppearanceSettingsPanel.THEME_AUTO);
 
                 themeEndHourSlider = new JSlider(0, 24, 6);
                 themeEndHourSlider.setMajorTickSpacing(2);
@@ -49,6 +55,7 @@ public final class AppearanceSettingsPanel extends AbstractSettingsPanel {
                 themeEndHourSlider.setPaintLabels(true);
                 themeEndHourSlider.setSnapToTicks(true);
                 themeEndHourSlider.setValue(Config.getInt("settings.appearance.auto_end", 6));
+                themeEndHourSlider.setEnabled(themeComboBox.getSelectedIndex() == AppearanceSettingsPanel.THEME_AUTO);
 
                 themeComboBox.addActionListener(e -> {
                         String selected = (String) themeComboBox.getSelectedItem();

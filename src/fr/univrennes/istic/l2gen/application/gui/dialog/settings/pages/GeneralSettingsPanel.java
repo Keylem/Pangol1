@@ -21,6 +21,9 @@ import fr.univrennes.istic.l2gen.application.gui.dialog.settings.SettingsRowPane
 import fr.univrennes.istic.l2gen.application.gui.dialog.settings.SettingsSectionPanel;
 
 public final class GeneralSettingsPanel extends AbstractSettingsPanel {
+        public static final int SOURCE_NONE = 0;
+        public static final int SOURCE_FILE = 1;
+        public static final int SOURCE_URL = 2;
 
         private final JComboBox<String> languageComboBox;
 
@@ -82,18 +85,7 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                                                 Lang.get("settings.general.startup.default.from_url")
                                 });
 
-                String defaultTableSource = Config.get("settings.startup.default_table_source", "");
-                File defaultTableSourceFile = new File(defaultTableSource);
-                if (defaultTableSource.isEmpty()) {
-                        defaultTableSourceComboBox.setSelectedIndex(0);
-                } else if (defaultTableSourceFile.exists() && defaultTableSourceFile.isFile()) {
-                        defaultTableSourceComboBox.setSelectedIndex(1);
-                } else {
-                        defaultTableSourceComboBox.setSelectedIndex(2);
-                }
-
                 defaultTableSourceTextField = new JTextField();
-                defaultTableSourceTextField.setText(defaultTableSource);
                 defaultTableSourceTextField.setPreferredSize(
                                 new Dimension(SettingsRowPanel.LABEL_WIDTH, SettingsRowPanel.ROW_HEIGHT - 8));
                 defaultTableSourceTextField.setVisible(false);
@@ -114,18 +106,41 @@ public final class GeneralSettingsPanel extends AbstractSettingsPanel {
                 });
 
                 defaultTableSourceComboBox.addActionListener(e -> {
-                        if (defaultTableSourceComboBox.getSelectedIndex() == 0) {
+                        if (defaultTableSourceComboBox.getSelectedIndex() == GeneralSettingsPanel.SOURCE_NONE) {
                                 defaultTableSourceTextField.setVisible(false);
                                 defaultTableSourceFileButton.setVisible(false);
-                        } else if (defaultTableSourceComboBox.getSelectedIndex() == 1) {
-                                defaultTableSourceTextField.setVisible(false);
+                        } else if (defaultTableSourceComboBox.getSelectedIndex() == GeneralSettingsPanel.SOURCE_FILE) {
+                                defaultTableSourceTextField.setVisible(true);
+                                defaultTableSourceTextField.setEnabled(false);
+
                                 defaultTableSourceFileButton.setVisible(true);
                         } else {
                                 defaultTableSourceTextField.setVisible(true);
+                                defaultTableSourceTextField.setEnabled(true);
+
                                 defaultTableSourceFileButton.setVisible(false);
                         }
                         defaultTableSourceTextField.setText("");
                 });
+
+                String defaultTableSource = Config.get("settings.startup.default_table_source", "");
+                File defaultTableSourceFile = new File(defaultTableSource);
+                if (defaultTableSource.isEmpty()) {
+                        defaultTableSourceComboBox.setSelectedIndex(GeneralSettingsPanel.SOURCE_NONE);
+                        defaultTableSourceTextField.setText("");
+                } else if (defaultTableSourceFile.exists() && defaultTableSourceFile.isFile()) {
+                        defaultTableSourceComboBox.setSelectedIndex(GeneralSettingsPanel.SOURCE_FILE);
+                        defaultTableSourceTextField.setText(defaultTableSource);
+                        defaultTableSourceTextField.setVisible(true);
+                        defaultTableSourceTextField.setEnabled(false);
+
+                        defaultTableSourceFileButton.setVisible(true);
+                } else {
+                        defaultTableSourceComboBox.setSelectedIndex(GeneralSettingsPanel.SOURCE_URL);
+                        defaultTableSourceTextField.setText(defaultTableSource);
+                        defaultTableSourceTextField.setVisible(true);
+                        defaultTableSourceFileButton.setVisible(false);
+                }
 
                 startupSection.addRow(new SettingsRowPanel(Lang.get("settings.general.startup.default_table"),
                                 defaultTableSourceComboBox));

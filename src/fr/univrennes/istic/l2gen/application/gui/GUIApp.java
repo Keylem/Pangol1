@@ -5,6 +5,7 @@ import fr.univrennes.istic.l2gen.application.core.config.Config;
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
 import fr.univrennes.istic.l2gen.application.core.config.Log;
 import fr.univrennes.istic.l2gen.application.core.services.TableService;
+import fr.univrennes.istic.l2gen.application.gui.dialog.settings.pages.AppearanceSettingsPanel;
 import fr.univrennes.istic.l2gen.application.gui.main.MainView;
 import fr.univrennes.istic.l2gen.application.gui.main.SplashScreen;
 
@@ -57,15 +58,15 @@ public final class GUIApp extends CoreApp<GUIController> {
 
             try {
                 switch (theme) {
-                    case 0 -> {
+                    case AppearanceSettingsPanel.THEME_LIGHT -> {
                         UIManager.setLookAndFeel(new FlatLightLaf());
                         Config.DARK_MODE = false;
                     }
-                    case 1 -> {
+                    case AppearanceSettingsPanel.THEME_DARK -> {
                         UIManager.setLookAndFeel(new FlatDarkLaf());
                         Config.DARK_MODE = true;
                     }
-                    case 2 -> {
+                    case AppearanceSettingsPanel.THEME_SYSTEM -> {
                         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                         Config.DARK_MODE = UIManager.getLookAndFeel() instanceof FlatDarkLaf;
                     }

@@ -35,7 +35,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import org.apache.batik.transcoder.TranscoderInput;
-import org.apache.batik.transcoder.TranscoderOutput;
 import org.apache.batik.transcoder.image.ImageTranscoder;
 
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
@@ -60,25 +59,6 @@ final class NoteBookCellRenderer extends JPanel implements ListCellRenderer<Note
     private static final ImageIcon BROKEN_ICON = new ImageIcon();
 
     private static final ExecutorService executor = Executors.newFixedThreadPool(2);
-
-    private static final class BufferedImageTranscoder extends ImageTranscoder {
-
-        private BufferedImage result;
-
-        @Override
-        public BufferedImage createImage(int width, int height) {
-            return new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        }
-
-        @Override
-        public void writeImage(BufferedImage image, TranscoderOutput output) {
-            this.result = image;
-        }
-
-        public BufferedImage getResult() {
-            return result;
-        }
-    }
 
     private final CardLayout cardLayout = new CardLayout();
     private final JPanel cardPanel = new JPanel(cardLayout);
@@ -249,9 +229,12 @@ final class NoteBookCellRenderer extends JPanel implements ListCellRenderer<Note
             chartLabel.setText(Lang.get("report.setting.chart.loading"));
 
             if (!loadingCharts.contains(chart)) {
-                loadingCharts.add(chart);
-
                 int renderWidth = noteBook.getWidth() - 16 * 2;
+                if (renderWidth <= 0) {
+                    return;
+                }
+
+                loadingCharts.add(chart);
                 executor.submit(() -> {
                     ImageIcon loadedIcon = null;
                     String svgContent = chart.getSVG();

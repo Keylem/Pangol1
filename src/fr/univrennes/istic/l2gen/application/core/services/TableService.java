@@ -406,7 +406,10 @@ public final class TableService {
                 new ByteArrayInputStream(Config.getByteArray("settings.startup.recent_tables", new byte[0])))) {
             int i = 0;
             while (scanner.hasNextLine() && i < MAX_RECENTS) {
-                recents.add(new File(scanner.nextLine()));
+                File recentFile = new File(scanner.nextLine());
+                if (recentFile.exists() && recentFile.isFile()) {
+                    recents.add(recentFile);
+                }
                 i++;
             }
         }
@@ -415,7 +418,7 @@ public final class TableService {
     public static void saveRecents() {
         StringBuilder sb = new StringBuilder();
         for (File recent : recents) {
-            if (recent != null) {
+            if (recent != null && recent.exists() && recent.isFile()) {
                 sb.append(recent.getAbsolutePath()).append("\n");
             }
         }

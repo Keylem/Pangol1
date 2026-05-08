@@ -91,6 +91,7 @@ public final class GUIController extends CoreController {
 
         mainView.ready();
         openDefaultTable();
+
     }
 
     @Override
