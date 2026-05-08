@@ -7,6 +7,8 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+import fr.univrennes.istic.l2gen.application.core.config.Log;
+
 public final class FileService {
 
     public static File getAppDataDir() {
@@ -34,7 +36,8 @@ public final class FileService {
                     if (encodedValue.toUpperCase().startsWith("UTF-8''")) {
                         try {
                             return URLDecoder.decode(encodedValue.substring(7), StandardCharsets.UTF_8);
-                        } catch (IllegalArgumentException ignored) {
+                        } catch (IllegalArgumentException e) {
+                            Log.debug("Failed to decode filename from Content-Disposition header", e);
                         }
                     }
                 }

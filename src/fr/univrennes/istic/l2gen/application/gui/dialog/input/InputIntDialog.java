@@ -16,13 +16,26 @@ import javax.swing.SpinnerNumberModel;
 public final class InputIntDialog extends AbstractInputDialog<Integer> {
 
     private JSpinner spinner;
+    private Integer min = null;
+    private Integer max = null;
 
     public static Optional<Integer> show(String message, String title, String errorMessage) {
         return new InputIntDialog().showDialog(message, title, errorMessage);
     }
 
+    public static Optional<Integer> show(String message, String title, String errorMessage, int min, int max) {
+        InputIntDialog dialog = new InputIntDialog();
+        dialog.setRange(min, max);
+        return dialog.showDialog(message, title, errorMessage);
+    }
+
+    public void setRange(int min, int max) {
+        this.min = min;
+        this.max = max;
+    }
+
     @Override
-    protected JComponent buildPanel(String message) {
+    protected JComponent build(String message) {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(4, 0, 4, 0);
@@ -33,7 +46,11 @@ public final class InputIntDialog extends AbstractInputDialog<Integer> {
         constraints.gridy = 0;
         panel.add(new JLabel(message), constraints);
 
-        spinner = new JSpinner(new SpinnerNumberModel(0, null, null, 1));
+        int value = this.min != null ? this.min.intValue() : 0;
+        int minValue = this.min != null ? this.min.intValue() : 0;
+        int maxValue = this.max != null ? this.max.intValue() : Integer.MAX_VALUE;
+
+        spinner = new JSpinner(new SpinnerNumberModel(value, minValue, maxValue, 1));
         JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "0");
         spinner.setEditor(editor);
         JTextField textField = editor.getTextField();

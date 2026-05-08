@@ -5,11 +5,12 @@ import java.util.Optional;
 import javax.swing.JComponent;
 import javax.swing.JOptionPane;
 
+import fr.univrennes.istic.l2gen.application.core.config.Log;
 import fr.univrennes.istic.l2gen.application.gui.GUIController;
 
 public abstract class AbstractInputDialog<T> {
 
-    protected abstract JComponent buildPanel(String message);
+    protected abstract JComponent build(String message);
 
     protected abstract T readValue() throws Exception;
 
@@ -17,7 +18,7 @@ public abstract class AbstractInputDialog<T> {
     }
 
     public Optional<T> showDialog(String message, String title, String errorMessage) {
-        JComponent panel = buildPanel(message);
+        JComponent panel = build(message);
         while (true) {
             int result = JOptionPane.showConfirmDialog(GUIController.getInstance().getMainView(), panel, title,
                     JOptionPane.OK_CANCEL_OPTION,
@@ -29,7 +30,8 @@ public abstract class AbstractInputDialog<T> {
             try {
                 T value = readValue();
                 return Optional.of(value);
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                Log.debug("Invalid input provided", e);
             }
 
             JOptionPane.showMessageDialog(GUIController.getInstance().getMainView(), errorMessage, title,

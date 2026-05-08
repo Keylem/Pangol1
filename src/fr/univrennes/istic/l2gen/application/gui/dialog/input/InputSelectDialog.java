@@ -25,7 +25,7 @@ public final class InputSelectDialog extends AbstractInputDialog<String> {
     }
 
     @Override
-    protected JComponent buildPanel(String message) {
+    protected JComponent build(String message) {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(4, 0, 4, 0);

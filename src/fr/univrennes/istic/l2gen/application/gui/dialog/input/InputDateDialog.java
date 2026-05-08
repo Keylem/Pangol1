@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.text.ParseException;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Optional;
 
@@ -17,13 +18,25 @@ import javax.swing.SpinnerDateModel;
 public final class InputDateDialog extends AbstractInputDialog<Date> {
 
     private JSpinner spinner;
+    private Date min = null;
+    private Date max = null;
 
     public static Optional<Date> show(String message, String title, String errorMessage) {
         return new InputDateDialog().showDialog(message, title, errorMessage);
     }
 
+    public static Optional<Date> show(String message, String title, String errorMessage, Date min, Date max) {
+        InputDateDialog dialog = new InputDateDialog();
+        return dialog.showDialog(message, title, errorMessage);
+    }
+
+    public void setRange(Date min, Date max) {
+        this.min = min;
+        this.max = max;
+    }
+
     @Override
-    protected JComponent buildPanel(String message) {
+    protected JComponent build(String message) {
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.insets = new Insets(4, 0, 4, 0);
@@ -34,7 +47,11 @@ public final class InputDateDialog extends AbstractInputDialog<Date> {
         constraints.gridy = 0;
         panel.add(new JLabel(message), constraints);
 
-        spinner = new JSpinner(new SpinnerDateModel());
+        Date value = this.min != null ? this.min : new Date();
+        Date minValue = this.min != null ? this.min : new Date(0);
+        Date maxValue = this.max != null ? this.max : new Date(Long.MAX_VALUE);
+
+        spinner = new JSpinner(new SpinnerDateModel(value, minValue, maxValue, Calendar.SECOND));
         JSpinner.DateEditor editor = new JSpinner.DateEditor(spinner, "yyyy-MM-dd HH:mm:ss");
         spinner.setEditor(editor);
         JTextField textField = editor.getTextField();

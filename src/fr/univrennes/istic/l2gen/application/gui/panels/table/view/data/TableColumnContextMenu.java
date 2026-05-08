@@ -14,6 +14,7 @@ import javax.swing.SwingWorker;
 import fr.univrennes.istic.l2gen.application.core.TaskStatus;
 import fr.univrennes.istic.l2gen.application.core.config.Config;
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
+import fr.univrennes.istic.l2gen.application.core.config.Log;
 import fr.univrennes.istic.l2gen.application.core.filter.Filter;
 import fr.univrennes.istic.l2gen.application.core.notebook.NoteBookText;
 import fr.univrennes.istic.l2gen.application.core.services.notebook.NoteBookService;
@@ -139,18 +140,32 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                 }
                                         }
                                         case INTEGER, DOUBLE -> {
+                                                double minValue = StatisticService.getMinAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
+                                                double maxValue = StatisticService.getMaxAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
                                                 double value = InputDoubleDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.double"),
                                                                 Lang.get("tablecolumnmenu.filter.topn"),
-                                                                Lang.get("tablecolumnmenu.filter.double.error"))
+                                                                Lang.get("tablecolumnmenu.filter.double.error"),
+                                                                minValue, maxValue)
                                                                 .get();
                                                 table.addFilter(Filter.topN(tableIndex, value));
                                         }
                                         case DATE -> {
+                                                java.sql.Timestamp minTimestamp = StatisticService
+                                                                .getMinAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(0));
+                                                java.sql.Timestamp maxTimestamp = StatisticService
+                                                                .getMaxAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(System.currentTimeMillis()));
+
                                                 java.util.Date date = InputDateDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.date"),
                                                                 Lang.get("tablecolumnmenu.filter.topn"),
-                                                                Lang.get("tablecolumnmenu.filter.date.error"))
+                                                                Lang.get("tablecolumnmenu.filter.date.error"),
+                                                                minTimestamp,
+                                                                maxTimestamp)
                                                                 .get();
 
                                                 Timestamp sqlDate = new Timestamp(date.getTime());
@@ -180,18 +195,31 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                 }
                                         }
                                         case INTEGER, DOUBLE -> {
+                                                double minValue = StatisticService.getMinAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
+                                                double maxValue = StatisticService.getMaxAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
                                                 double value = InputDoubleDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.double"),
                                                                 Lang.get("tablecolumnmenu.filter.bottomn"),
-                                                                Lang.get("tablecolumnmenu.filter.double.error"))
+                                                                Lang.get("tablecolumnmenu.filter.double.error"),
+                                                                minValue, maxValue)
                                                                 .get();
                                                 table.addFilter(Filter.bottomN(tableIndex, value));
                                         }
                                         case DATE -> {
+                                                java.sql.Timestamp minTimestamp = StatisticService
+                                                                .getMinAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(0));
+                                                java.sql.Timestamp maxTimestamp = StatisticService
+                                                                .getMaxAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(System.currentTimeMillis()));
                                                 java.util.Date date = InputDateDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.date"),
                                                                 Lang.get("tablecolumnmenu.filter.bottomn"),
-                                                                Lang.get("tablecolumnmenu.filter.date.error"))
+                                                                Lang.get("tablecolumnmenu.filter.date.error"),
+                                                                minTimestamp,
+                                                                maxTimestamp)
                                                                 .get();
 
                                                 Timestamp sqlDate = new Timestamp(date.getTime());
@@ -225,31 +253,50 @@ public final class TableColumnContextMenu extends JPopupMenu {
                                                 table.addFilter(Filter.byRange(tableIndex, minLength, maxLength));
                                         }
                                         case INTEGER, DOUBLE -> {
+                                                double minColValue = StatisticService.getMinAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
+                                                double maxColValue = StatisticService.getMaxAsDouble(table, tableIndex)
+                                                                .orElse(0.0);
                                                 double minValue = InputDoubleDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.double"),
                                                                 Lang.get("tablecolumnmenu.filter.range.min"),
-                                                                Lang.get("tablecolumnmenu.filter.double.error"))
+                                                                Lang.get("tablecolumnmenu.filter.double.error"),
+                                                                minColValue, maxColValue)
                                                                 .get();
                                                 double maxValue = InputDoubleDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.double"),
                                                                 Lang.get("tablecolumnmenu.filter.range.max"),
-                                                                Lang.get("tablecolumnmenu.filter.double.error"))
+                                                                Lang.get("tablecolumnmenu.filter.double.error"),
+                                                                minColValue, maxColValue)
                                                                 .get();
                                                 maxValue = Math.max(maxValue, minValue);
                                                 minValue = Math.min(minValue, maxValue);
                                                 table.addFilter(Filter.byRange(tableIndex, minValue, maxValue));
                                         }
                                         case DATE -> {
+                                                java.sql.Timestamp minTimestamp = StatisticService
+                                                                .getMinAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(0));
+                                                java.sql.Timestamp maxTimestamp = StatisticService
+                                                                .getMaxAsTimestamp(table, tableIndex)
+                                                                .orElse(new Timestamp(System.currentTimeMillis()));
+
                                                 java.util.Date minDate = InputDateDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.date"),
                                                                 Lang.get("tablecolumnmenu.filter.range.min"),
-                                                                Lang.get("tablecolumnmenu.filter.date.error"))
+                                                                Lang.get("tablecolumnmenu.filter.date.error"),
+                                                                minTimestamp,
+                                                                maxTimestamp)
                                                                 .get();
+
                                                 java.util.Date maxDate = InputDateDialog.show(
                                                                 Lang.get("tablecolumnmenu.filter.date"),
                                                                 Lang.get("tablecolumnmenu.filter.range.max"),
-                                                                Lang.get("tablecolumnmenu.filter.date.error"))
+                                                                Lang.get("tablecolumnmenu.filter.date.error"),
+                                                                minTimestamp,
+                                                                maxTimestamp)
                                                                 .get();
+
                                                 if (maxDate.before(minDate)) {
                                                         java.util.Date temp = minDate;
                                                         minDate = maxDate;
