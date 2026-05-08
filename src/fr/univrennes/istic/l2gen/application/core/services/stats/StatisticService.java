@@ -12,6 +12,7 @@ import org.duckdb.DuckDBConnection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,7 +27,7 @@ public final class StatisticService {
         return String.format("%,.2f", value);
     }
 
-    public static boolean hasColumnCategories(DataTable table, int columnIndex) {
+    public static boolean hasCategories(DataTable table, int columnIndex) {
         if (!table.getColumnType(columnIndex).isCategorical()) {
             return false;
         }
@@ -60,7 +61,7 @@ public final class StatisticService {
 
     }
 
-    public static List<String> getColumnCategories(DataTable table, int columnIndex) {
+    public static List<String> getCategories(DataTable table, int columnIndex) {
         if (!table.getColumnType(columnIndex).isCategorical()) {
             return List.of();
         }
@@ -95,7 +96,59 @@ public final class StatisticService {
         return categories;
     }
 
-    public static Optional<String> computeBase(DataTable table, int columnIndex, StatisticOp action) {
+    public static OptionalDouble getMinAsDouble(DataTable table, int columnIndex) {
+        if (!table.getColumnType(columnIndex).isNumeric()) {
+            return OptionalDouble.empty();
+        }
+        String query = String.format(
+                "SELECT MIN(%s) FROM %s WHERE %s IS NOT NULL",
+                table.getSQLColumnName(columnIndex),
+                table.getSQLName(),
+                table.getSQLColumnName(columnIndex));
+
+        return executeDoubleQuery(query);
+    }
+
+    public static OptionalDouble getMaxAsDouble(DataTable table, int columnIndex) {
+        if (!table.getColumnType(columnIndex).isNumeric()) {
+            return OptionalDouble.empty();
+        }
+        String query = String.format(
+                "SELECT MAX(%s) FROM %s WHERE %s IS NOT NULL",
+                table.getSQLColumnName(columnIndex),
+                table.getSQLName(),
+                table.getSQLColumnName(columnIndex));
+
+        return executeDoubleQuery(query);
+    }
+
+    public static Optional<Timestamp> getMinAsTimestamp(DataTable table, int columnIndex) {
+        if (table.getColumnType(columnIndex) != DataType.DATE) {
+            return Optional.empty();
+        }
+        String query = String.format(
+                "SELECT MIN(%s) FROM %s",
+                table.getSQLColumnName(columnIndex),
+                table.getSQLName());
+
+        Optional<String> result = executeStringQuery(query);
+        return result.map(Timestamp::valueOf);
+    }
+
+    public static Optional<Timestamp> getMaxAsTimestamp(DataTable table, int columnIndex) {
+        if (table.getColumnType(columnIndex) != DataType.DATE) {
+            return Optional.empty();
+        }
+        String query = String.format(
+                "SELECT MAX(%s) FROM %s",
+                table.getSQLColumnName(columnIndex),
+                table.getSQLName());
+
+        Optional<String> result = executeStringQuery(query);
+        return result.map(Timestamp::valueOf);
+    }
+
+    public static Optional<String> getActionAsString(DataTable table, int columnIndex, StatisticOp action) {
         String query;
         String taskId = Pangol1.getController().addTask(
                 Lang.get("task.stats.base", action.getDisplayName(), table.getColumnName(columnIndex)),
@@ -147,7 +200,7 @@ public final class StatisticService {
         }
     }
 
-    public static OptionalDouble computeCorrelation(DataTable table, int columnIndexX, int columnIndexY) {
+    public static OptionalDouble getCorrelation(DataTable table, int columnIndexX, int columnIndexY) {
         if (!table.getColumnType(columnIndexX).isNumeric()
                 || !table.getColumnType(columnIndexY).isNumeric()) {
             return OptionalDouble.empty();
@@ -162,7 +215,7 @@ public final class StatisticService {
         return executeDoubleQuery(query);
     }
 
-    public static OptionalDouble computeCoefficientOfVariation(DataTable table, int columnIndex) {
+    public static OptionalDouble getCoefficientOfVariation(DataTable table, int columnIndex) {
         if (!table.getColumnType(columnIndex).isNumeric()) {
             return OptionalDouble.empty();
         }
@@ -176,7 +229,7 @@ public final class StatisticService {
         return executeDoubleQuery(query);
     }
 
-    public static OptionalDouble computeSkewness(DataTable table, int columnIndex) {
+    public static OptionalDouble getSkewness(DataTable table, int columnIndex) {
         if (!table.getColumnType(columnIndex).isNumeric())
             return OptionalDouble.empty();
 
@@ -188,7 +241,7 @@ public final class StatisticService {
         return executeDoubleQuery(query);
     }
 
-    public static OptionalDouble computeInterquartileRange(DataTable table, int columnIndex) {
+    public static OptionalDouble getInterquartileRange(DataTable table, int columnIndex) {
         if (!table.getColumnType(columnIndex).isNumeric())
             return OptionalDouble.empty();
 
@@ -200,7 +253,7 @@ public final class StatisticService {
         return executeDoubleQuery(query);
     }
 
-    public static OptionalDouble computeNullRate(DataTable table, int columnIndex) {
+    public static OptionalDouble getNullRate(DataTable table, int columnIndex) {
         String col = table.getSQLColumnName(columnIndex);
 
         String query = String.format(
@@ -210,7 +263,7 @@ public final class StatisticService {
         return executeDoubleQuery(query);
     }
 
-    public static OptionalDouble computeCardinalityRatio(DataTable table, int columnIndex) {
+    public static OptionalDouble getCardinalityRatio(DataTable table, int columnIndex) {
         String col = table.getSQLColumnName(columnIndex);
 
         String query = String.format(
@@ -255,7 +308,7 @@ public final class StatisticService {
     public static String computeSummary(DataTable currentTable, int columnIndex) {
         StringBuilder summary = new StringBuilder();
         for (StatisticOp action : StatisticOp.values()) {
-            Optional<String> result = computeBase(currentTable, columnIndex, action);
+            Optional<String> result = getActionAsString(currentTable, columnIndex, action);
             if (result.isPresent()) {
                 summary.append(action.getDisplayName()).append(": ").append(result.get()).append("\n");
             } else {
@@ -263,7 +316,7 @@ public final class StatisticService {
             }
         }
 
-        OptionalDouble nullRate = computeNullRate(currentTable, columnIndex);
+        OptionalDouble nullRate = getNullRate(currentTable, columnIndex);
         if (nullRate.isPresent()) {
             summary.append("Null rate: ").append(formatDouble(nullRate.getAsDouble() * 100)).append("%\n");
         } else {

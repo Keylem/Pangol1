@@ -3,6 +3,7 @@ package fr.univrennes.istic.l2gen.application.gui.dialog.filter;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.text.NumberFormatter;
 
 import fr.univrennes.istic.l2gen.application.core.config.Ico;
 import fr.univrennes.istic.l2gen.application.core.config.Lang;
@@ -38,6 +39,7 @@ public final class FilterDialog extends JDialog {
     private final List<Filter> result = new ArrayList<>();
     private final JPanel conditionsPanel = new JPanel();
     private final List<FilterRow> conditionRows = new ArrayList<>();
+    private int lastSelectedColumnIndex = -1;
 
     private JComboBox<String> columnComboBox;
     private JComboBox<String> filterTypeComboBox;
@@ -281,18 +283,25 @@ public final class FilterDialog extends JDialog {
 
     private JSpinner createIntegerSpinner() {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(0, null, null, 1));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "0");
-        spinner.setEditor(editor);
-        editor.getTextField().setColumns(12);
+        configureNumericEditor(spinner, "0", Integer.class);
         return spinner;
     }
 
     private JSpinner createDoubleSpinner() {
         JSpinner spinner = new JSpinner(new SpinnerNumberModel(0.0, null, null, 0.1));
-        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, "0.###");
-        spinner.setEditor(editor);
-        editor.getTextField().setColumns(12);
+        configureNumericEditor(spinner, "0.###", Double.class);
         return spinner;
+    }
+
+    private void configureNumericEditor(JSpinner spinner, String pattern, Class<? extends Number> valueClass) {
+        JSpinner.NumberEditor editor = new JSpinner.NumberEditor(spinner, pattern);
+        JFormattedTextField textField = editor.getTextField();
+        textField.setColumns(12);
+        JFormattedTextField.AbstractFormatter formatter = textField.getFormatter();
+        if (formatter instanceof NumberFormatter numberFormatter) {
+            numberFormatter.setValueClass(valueClass);
+        }
+        spinner.setEditor(editor);
     }
 
     private JSpinner createDateSpinner() {
@@ -301,6 +310,135 @@ public final class FilterDialog extends JDialog {
         spinner.setEditor(editor);
         editor.getTextField().setColumns(20);
         return spinner;
+    }
+
+    private void refreshInputBounds(DataType columnType, boolean resetToMin) {
+        int columnIndex = columnComboBox.getSelectedIndex();
+        if (columnIndex < 0) {
+            return;
+        }
+
+        switch (columnType) {
+            case INTEGER, DOUBLE -> {
+                double minValue = StatisticService.getMinAsDouble(table, columnIndex).orElse(Double.NaN);
+                double maxValue = StatisticService.getMaxAsDouble(table, columnIndex).orElse(Double.NaN);
+
+                Double min = Double.isFinite(minValue) ? minValue : null;
+                Double max = Double.isFinite(maxValue) ? maxValue : null;
+
+                if (min != null && max != null && min > max) {
+                    Double temp = min;
+                    min = max;
+                    max = temp;
+                }
+
+                updateNumericSpinnerBounds(min, max, columnType, resetToMin);
+            }
+            case DATE -> {
+                Timestamp minTimestamp = StatisticService.getMinAsTimestamp(table, columnIndex).orElse(null);
+                Timestamp maxTimestamp = StatisticService.getMaxAsTimestamp(table, columnIndex).orElse(null);
+
+                Date min = minTimestamp != null ? new Date(minTimestamp.getTime()) : null;
+                Date max = maxTimestamp != null ? new Date(maxTimestamp.getTime()) : null;
+                if (min != null && max != null && min.after(max)) {
+                    Date temp = min;
+                    min = max;
+                    max = temp;
+                }
+
+                updateDateSpinnerBounds(min, max, resetToMin);
+            }
+            default -> {
+            }
+        }
+    }
+
+    private void updateNumericSpinnerBounds(Double min, Double max, DataType columnType, boolean resetToMin) {
+        applyNumericBounds(searchNumericSpinner, min, max, columnType, resetToMin);
+        applyNumericBounds(rangeNumericMinSpinner, min, max, columnType, resetToMin);
+        applyNumericBounds(rangeNumericMaxSpinner, min, max, columnType, resetToMin);
+        applyNumericBounds(topNNumericSpinner, min, max, columnType, resetToMin);
+        applyNumericBounds(bottomNNumericSpinner, min, max, columnType, resetToMin);
+    }
+
+    private void applyNumericBounds(JSpinner spinner, Double min, Double max, DataType columnType, boolean resetToMin) {
+        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+        Double boundedMin = min;
+        Double boundedMax = max;
+        if (columnType == DataType.INTEGER) {
+            boundedMin = min != null ? Math.ceil(min) : null;
+            boundedMax = max != null ? Math.floor(max) : null;
+            if (boundedMin != null && boundedMax != null && boundedMin > boundedMax) {
+                Double temp = boundedMin;
+                boundedMin = boundedMax;
+                boundedMax = temp;
+            }
+        }
+
+        double clampedValue = getNumericValueForBounds(model, boundedMin, boundedMax, resetToMin);
+        if (columnType == DataType.INTEGER) {
+            clampedValue = Math.rint(clampedValue);
+            clampedValue = clampDouble(clampedValue, boundedMin, boundedMax);
+        }
+
+        Number stepSize = columnType == DataType.INTEGER ? 1.0 : model.getStepSize();
+        spinner.setModel(new SpinnerNumberModel(clampedValue, boundedMin, boundedMax, stepSize));
+        configureNumericEditor(spinner, columnType == DataType.INTEGER ? "0" : "0.###", Double.class);
+    }
+
+    private double getNumericValueForBounds(SpinnerNumberModel model, Double min, Double max, boolean resetToMin) {
+        if (resetToMin && min != null) {
+            return min;
+        }
+        double currentValue = ((Number) model.getValue()).doubleValue();
+        return clampDouble(currentValue, min, max);
+    }
+
+    private double clampDouble(double value, Double min, Double max) {
+        double clamped = Double.isFinite(value) ? value : 0.0;
+        if (min != null && clamped < min) {
+            clamped = min;
+        }
+        if (max != null && clamped > max) {
+            clamped = max;
+        }
+        return clamped;
+    }
+
+    private void updateDateSpinnerBounds(Date min, Date max, boolean resetToMin) {
+        applyDateBounds(searchDateSpinner, min, max, resetToMin);
+        applyDateBounds(rangeDateMinSpinner, min, max, resetToMin);
+        applyDateBounds(rangeDateMaxSpinner, min, max, resetToMin);
+        applyDateBounds(topNDateSpinner, min, max, resetToMin);
+        applyDateBounds(bottomNDateSpinner, min, max, resetToMin);
+    }
+
+    private void applyDateBounds(JSpinner spinner, Date min, Date max, boolean resetToMin) {
+        SpinnerDateModel model = (SpinnerDateModel) spinner.getModel();
+        Date clampedValue = getDateValueForBounds(model, min, max, resetToMin);
+        int calendarField = model.getCalendarField();
+
+        spinner.setModel(new SpinnerDateModel(clampedValue, min, max, calendarField));
+        spinner.setEditor(new JSpinner.DateEditor(spinner, "yyyy-MM-dd HH:mm:ss"));
+    }
+
+    private Date getDateValueForBounds(SpinnerDateModel model, Date min, Date max, boolean resetToMin) {
+        if (resetToMin && min != null) {
+            return min;
+        }
+        Date currentValue = (Date) model.getValue();
+        return clampDate(currentValue, min, max);
+    }
+
+    private Date clampDate(Date value, Date min, Date max) {
+        Date clamped = value != null ? value : new Date();
+        if (min != null && clamped.before(min)) {
+            clamped = min;
+        }
+        if (max != null && clamped.after(max)) {
+            clamped = max;
+        }
+        return clamped;
     }
 
     private void refreshConditionPanel() {
@@ -313,7 +451,12 @@ public final class FilterDialog extends JDialog {
         optionsLayout.show(conditionOptionsPanel, selectedType.name());
         logicOperatorComboBox.setEnabled(selectedType != FilterType.SORT);
 
+        int columnIndex = columnComboBox.getSelectedIndex();
+        boolean columnChanged = columnIndex != lastSelectedColumnIndex;
+        lastSelectedColumnIndex = columnIndex;
+
         DataType columnType = getSelectedColumnType();
+        refreshInputBounds(columnType, columnChanged);
         showCard(searchInputsPanel, getSearchCard(columnType));
         showCard(rangeInputsPanel, getRangeCard(columnType));
         showCard(topNInputsPanel, getNCard(columnType));
@@ -344,10 +487,10 @@ public final class FilterDialog extends JDialog {
             case BOOLEAN -> CARD_BOOLEAN;
             case EMPTY -> CARD_STRING;
             case STRING -> {
-                boolean hasCategories = StatisticService.hasColumnCategories(table, columnComboBox.getSelectedIndex());
+                boolean hasCategories = StatisticService.hasCategories(table, columnComboBox.getSelectedIndex());
                 if (hasCategories) {
 
-                    List<String> categories = StatisticService.getColumnCategories(table,
+                    List<String> categories = StatisticService.getCategories(table,
                             columnComboBox.getSelectedIndex());
                     searchSelectComboBox.setModel(new DefaultComboBoxModel<>(categories.toArray(new String[0])));
 
@@ -604,21 +747,38 @@ public final class FilterDialog extends JDialog {
     }
 
     private double readDoubleSpinner(JSpinner spinner) throws ParseException {
-        spinner.commitEdit();
-        Object value = spinner.getValue();
-        if (value instanceof Number number) {
-            return number.doubleValue();
+        JSpinner.NumberEditor editor = (JSpinner.NumberEditor) spinner.getEditor();
+        String text = editor.getTextField().getText();
+        Number parsed = editor.getFormat().parse(text);
+        if (parsed == null) {
+            throw new ParseException("Invalid number", 0);
         }
-        throw new ParseException("Invalid number", 0);
+
+        SpinnerNumberModel model = (SpinnerNumberModel) spinner.getModel();
+        Comparable<?> minimum = model.getMinimum();
+        Comparable<?> maximum = model.getMaximum();
+        Double min = minimum instanceof Number number ? number.doubleValue() : null;
+        Double max = maximum instanceof Number number ? number.doubleValue() : null;
+
+        double clamped = clampDouble(parsed.doubleValue(), min, max);
+        spinner.setValue(clamped);
+        return clamped;
     }
 
     private Timestamp readTimestampSpinner(JSpinner spinner) throws ParseException {
-        spinner.commitEdit();
-        Object value = spinner.getValue();
-        if (value instanceof Date date) {
-            return new Timestamp(date.getTime());
+        JSpinner.DateEditor editor = (JSpinner.DateEditor) spinner.getEditor();
+        String text = editor.getTextField().getText();
+        Date parsed = editor.getFormat().parse(text);
+        if (parsed == null) {
+            throw new ParseException("Invalid date", 0);
         }
-        throw new ParseException("Invalid date", 0);
+
+        SpinnerDateModel model = (SpinnerDateModel) spinner.getModel();
+        Date min = (Date) model.getStart();
+        Date max = (Date) model.getEnd();
+        Date clamped = clampDate(parsed, min, max);
+        spinner.setValue(clamped);
+        return new Timestamp(clamped.getTime());
     }
 
     private void showValidationError(String message) {

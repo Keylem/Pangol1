@@ -301,8 +301,8 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                                 @Override
                                 protected Void doInBackground() throws Exception {
-                                        hasCategories = StatisticService.hasColumnCategories(table, tableIndex);
-                                        categories = StatisticService.getColumnCategories(table, tableIndex);
+                                        hasCategories = StatisticService.hasCategories(table, tableIndex);
+                                        categories = StatisticService.getCategories(table, tableIndex);
                                         return null;
                                 }
 
@@ -389,7 +389,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                 JMenuItem nullRateItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.null_rate"));
                 nullRateItem.addActionListener(e -> {
-                        OptionalDouble nullRateOpt = StatisticService.computeNullRate(table, tableIndex);
+                        OptionalDouble nullRateOpt = StatisticService.getNullRate(table, tableIndex);
                         String nullRateStr = nullRateOpt.isPresent() ? String.format("%.2f%%",
                                         nullRateOpt.getAsDouble() * 100) : "N/A";
 
@@ -404,7 +404,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                 JMenuItem cardinalityRatioItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.cardinality_ratio"));
                 cardinalityRatioItem
                                 .addActionListener(e -> {
-                                        OptionalDouble cardinalityRatioOpt = StatisticService.computeCardinalityRatio(
+                                        OptionalDouble cardinalityRatioOpt = StatisticService.getCardinalityRatio(
                                                         table,
                                                         tableIndex);
                                         String cardinalityRatioStr = cardinalityRatioOpt.isPresent()
@@ -429,7 +429,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                         interquartileRangeItem.addActionListener(
                                         e -> {
                                                 OptionalDouble iqrOpt = StatisticService
-                                                                .computeInterquartileRange(table, tableIndex);
+                                                                .getInterquartileRange(table, tableIndex);
                                                 String iqrStr = iqrOpt.isPresent()
                                                                 ? String.format("%.4f", iqrOpt.getAsDouble())
                                                                 : "N/A";
@@ -447,7 +447,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
 
                         JMenuItem skewnessItem = new JMenuItem(Lang.get("tablecolumnmenu.stats.skewness"));
                         skewnessItem.addActionListener(e -> {
-                                OptionalDouble skewnessOpt = StatisticService.computeSkewness(table, tableIndex);
+                                OptionalDouble skewnessOpt = StatisticService.getSkewness(table, tableIndex);
                                 String skewnessStr = skewnessOpt.isPresent()
                                                 ? String.format("%.4f", skewnessOpt.getAsDouble())
                                                 : "N/A";
@@ -464,7 +464,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                         coefVariationItem.addActionListener(
                                         e -> {
                                                 OptionalDouble coefVarOpt = StatisticService
-                                                                .computeCoefficientOfVariation(table, tableIndex);
+                                                                .getCoefficientOfVariation(table, tableIndex);
                                                 String coefVarStr = coefVarOpt.isPresent()
                                                                 ? String.format("%.4f", coefVarOpt.getAsDouble())
                                                                 : "N/A";
@@ -484,7 +484,7 @@ public final class TableColumnContextMenu extends JPopupMenu {
                         this.columnSelector(correlationItem,
                                         i -> i != tableIndex && table.getColumnType(i).isNumeric(),
                                         targetIndex -> {
-                                                OptionalDouble correlationOpt = StatisticService.computeCorrelation(
+                                                OptionalDouble correlationOpt = StatisticService.getCorrelation(
                                                                 table, tableIndex,
                                                                 targetIndex);
                                                 String correlationStr = correlationOpt.isPresent()

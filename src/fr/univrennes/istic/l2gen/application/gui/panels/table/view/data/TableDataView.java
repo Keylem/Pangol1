@@ -126,16 +126,16 @@ public final class TableDataView extends JPanel {
 
                 @Override
                 protected List<Optional<String>> doInBackground() throws Exception {
-                    Optional<String> min = StatisticService.computeBase(table,
+                    Optional<String> min = StatisticService.getActionAsString(table,
                             tableIndex,
                             StatisticOp.MIN);
-                    Optional<String> max = StatisticService.computeBase(table,
+                    Optional<String> max = StatisticService.getActionAsString(table,
                             tableIndex,
                             StatisticOp.MAX);
-                    Optional<String> avg = StatisticService.computeBase(table,
+                    Optional<String> avg = StatisticService.getActionAsString(table,
                             tableIndex,
                             StatisticOp.AVG);
-                    Optional<String> sum = StatisticService.computeBase(table,
+                    Optional<String> sum = StatisticService.getActionAsString(table,
                             tableIndex,
                             StatisticOp.SUM);
 
